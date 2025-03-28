@@ -1,0 +1,88 @@
+[
+    {
+      "id": "peanut_butter_sandwich",
+      "keywords": ["sandwich", "lunch", "protein", "quick"],
+      "components": [
+        {
+          "food_id": "white_bread",
+          "servings": 2
+        },
+        {
+          "food_id": "peanut_butter",
+          "servings": 1
+        }
+      ]
+    },
+    {
+      "id": "pbj_sandwich",
+      "keywords": ["sandwich", "lunch", "sweet", "protein", "quick"],
+      "components": [
+        {
+          "food_id": "white_bread",
+          "servings": 2
+        },
+        {
+          "food_id": "peanut_butter",
+          "servings": 1
+        },
+        {
+          "food_id": "grape_jelly",
+          "servings": 1
+        }
+      ]
+    },
+    {
+      "id": "loaded_hot_dog",
+      "keywords": ["sandwich", "lunch", "meat", "fast food"],
+      "components": [
+        {
+          "food_id": "hot_dog",
+          "servings": 1
+        },
+        {
+          "food_id": "hot_dog_bun",
+          "servings": 1
+        },
+        {
+          "food_id": "ketchup",
+          "servings": 1
+        },
+        {
+          "food_id": "mustard",
+          "servings": 1
+        }
+      ]
+    },
+    {
+      "id": "cheese_sandwich",
+      "keywords": ["sandwich", "lunch", "dairy", "quick"],
+      "components": [
+        {
+          "food_id": "white_bread",
+          "servings": 2
+        },
+        {
+          "food_id": "cheddar_cheese",
+          "servings": 1
+        }
+      ]
+    },
+    {
+      "id": "healthy_bowl",
+      "keywords": ["meal", "healthy", "protein", "balanced"],
+      "components": [
+        {
+          "food_id": "chicken_breast",
+          "servings": 1
+        },
+        {
+          "food_id": "brown_rice",
+          "servings": 1
+        },
+        {
+          "food_id": "spinach",
+          "servings": 2
+        }
+      ]
+    }
+  ]

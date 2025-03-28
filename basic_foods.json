@@ -1,0 +1,77 @@
+[
+    {
+      "id": "apple",
+      "keywords": ["fruit", "fresh", "sweet", "snack"],
+      "calories": 95
+    },
+    {
+      "id": "whole_milk",
+      "keywords": ["dairy", "beverage", "drink", "protein"],
+      "calories": 150
+    },
+    {
+      "id": "cheddar_cheese",
+      "keywords": ["dairy", "protein", "sandwich", "snack"],
+      "calories": 113
+    },
+    {
+      "id": "white_bread",
+      "keywords": ["grain", "sandwich", "carb", "wheat"],
+      "calories": 80
+    },
+    {
+      "id": "whole_wheat_bread",
+      "keywords": ["grain", "sandwich", "carb", "wheat", "fiber"],
+      "calories": 70
+    },
+    {
+      "id": "peanut_butter",
+      "keywords": ["protein", "spread", "sandwich", "nut"],
+      "calories": 190
+    },
+    {
+      "id": "grape_jelly",
+      "keywords": ["sweet", "spread", "sandwich", "fruit"],
+      "calories": 50
+    },
+    {
+      "id": "hot_dog",
+      "keywords": ["meat", "protein", "processed", "sandwich"],
+      "calories": 150
+    },
+    {
+      "id": "hot_dog_bun",
+      "keywords": ["grain", "bread", "carb", "sandwich"],
+      "calories": 110
+    },
+    {
+      "id": "ketchup",
+      "keywords": ["condiment", "tomato", "sauce"],
+      "calories": 20
+    },
+    {
+      "id": "mustard",
+      "keywords": ["condiment", "sauce", "spicy"],
+      "calories": 5
+    },
+    {
+      "id": "banana",
+      "keywords": ["fruit", "fresh", "sweet", "snack", "potassium"],
+      "calories": 105
+    },
+    {
+      "id": "chicken_breast",
+      "keywords": ["meat", "protein", "lean", "poultry"],
+      "calories": 165
+    },
+    {
+      "id": "brown_rice",
+      "keywords": ["grain", "carb", "fiber", "side"],
+      "calories": 215
+    },
+    {
+      "id": "spinach",
+      "keywords": ["vegetable", "leafy", "green", "salad", "iron"],
+      "calories": 7
+    }
+  ]
