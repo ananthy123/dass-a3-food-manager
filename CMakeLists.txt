@@ -1,17 +1,17 @@
 cmake_minimum_required(VERSION 3.10)
 project(DietManager)
 
-# C++ standard
+# Use C++17 standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# Include directories
-include_directories(src)
+# Include all headers from the src folder
+include_directories(${CMAKE_SOURCE_DIR}/src)
 
-# Gather all .cpp files
+# Recursively find all .cpp files under src/
 file(GLOB_RECURSE SRC_FILES
     src/*.cpp
 )
 
-# Create the executable
+# Define the executable
 add_executable(diet_manager ${SRC_FILES})
