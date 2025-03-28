@@ -1,6 +1,7 @@
-# Format: id; keyword1,keyword2,...; component_id:servings,...
-
-PBJ Sandwich; sandwich,peanut,jelly; Bread:2,Peanut Butter:1,Jelly:1
-Cheese Sandwich; sandwich,cheese; Bread:2,Cheddar Cheese:1
-Grilled Chicken Meal; meal,grilled,chicken; Chicken Breast:1,Broccoli:1,Carrot:1
-Breakfast Bowl; breakfast,oatmeal,fruit; Oatmeal:1,Banana:1,Milk:0.5
+PBJ Sandwich; sandwich,peanut,jelly;Peanut Butter:1,Jelly:1
+Cheese Sandwich; sandwich,cheese;Cheddar Cheese:1
+Grilled Chicken Meal; meal,grilled,chicken;Broccoli:1,Carrot:1
+Breakfast Bowl; breakfast,oatmeal,fruit;Banana:1,Milk:0.5
+Fruit Salad;salad,fruit;Apple:2
+Fruit Salad;salad,fruit;Apple:2
+Fruit Salad;salad,fruit;Apple:2

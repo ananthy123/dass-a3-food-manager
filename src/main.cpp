@@ -7,17 +7,30 @@
 #include "Food/CompositeFood.h"
 
 int main() {
+    std::string basicFoodDB = "../data/basic_foods.txt";
+    std::string compositeFoodDB = "../data/composite_foods.txt";
+    std::string dailyLogDB = "../data/daily_log.txt";
+    
     // Initialize the food database with text files
-    FoodDatabase database("data/basic_foods.txt", "data/composite_foods.txt");
+    FoodDatabase database(basicFoodDB, compositeFoodDB);
     database.loadDatabase();
 
+    // Debug
+    std::cout << "Food Database initialized." << std::endl;
+
     // Initialize the daily log from text file
-    DailyLog log("data/daily_log.txt");
+    DailyLog log(dailyLogDB);
     log.loadLog();
+
+    // Debug
+    std::cout << "Daily Log initialized." << std::endl;
 
     // Initialize the diet profile (example values)
     DietProfile profile("male", 180, 25, 75, 1.55);
     profile.displayProfile();
+
+    // Debug
+    std::cout << "Diet Profile initialized." << std::endl;
 
     // Example: Add a new basic food (e.g., Apple)
     std::shared_ptr<BasicFood> apple = std::make_shared<BasicFood>(

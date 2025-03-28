@@ -21,6 +21,9 @@ std::shared_ptr<Food> FoodDatabase::findFoodById(const std::string& id) const {
 
 void FoodDatabase::loadDatabase() {
     // Load basic foods from text file
+    // Debug 
+    std::cout << "Loading basic foods from: " << basicFoodsFile << std::endl;
+
     std::ifstream inBasic(basicFoodsFile);
     if (!inBasic) {
         std::cerr << "Failed to open basic foods file: " << basicFoodsFile << std::endl;

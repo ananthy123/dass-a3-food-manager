@@ -1,14 +1,15 @@
-# Format: id; keyword1,keyword2,...; calories
-
-Apple; fruit,apple,red; 95
-Banana; fruit,banana,yellow; 105
-Peanut Butter; spread,peanut,butter; 190
-Bread; grain,bread,whole; 80
-Jelly; spread,jelly,grape; 50
-Egg; protein,egg; 78
-Milk; dairy,milk; 150
-Cheddar Cheese; dairy,cheese,cheddar; 113
-Chicken Breast; protein,chicken; 165
-Broccoli; vegetable,broccoli,green; 55
-Carrot; vegetable,carrot; 25
-Oatmeal; grain,oats,breakfast; 150
+Apple; fruit,apple,red;95
+Banana; fruit,banana,yellow;105
+Peanut Butter; spread,peanut,butter;190
+Bread; grain,bread,whole;80
+Jelly; spread,jelly,grape;50
+Egg; protein,egg;78
+Milk; dairy,milk;150
+Cheddar Cheese; dairy,cheese,cheddar;113
+Chicken Breast; protein,chicken;165
+Broccoli; vegetable,broccoli,green;55
+Carrot; vegetable,carrot;25
+Oatmeal; grain,oats,breakfast;150
+Apple;fruit,apple,red;95
+Apple;fruit,apple,red;95
+Apple;fruit,apple,red;95
