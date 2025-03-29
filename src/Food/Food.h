@@ -11,7 +11,7 @@ protected:
     public:
     std::string name;
     Food(const std::string& id, const std::string& name, const std::vector<std::string>& keywords);
-    virtual ~Food();
+    // virtual ~Food();
     std::string getId() const;
     std::string getName() const;
     std::vector<std::string> getKeywords() const;
