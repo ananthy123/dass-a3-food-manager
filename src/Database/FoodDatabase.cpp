@@ -20,53 +20,85 @@ std::shared_ptr<Food> FoodDatabase::findFoodById(const std::string& id) const {
 }
 
 void FoodDatabase::loadDatabase() {
-    // Load basic foods from text file
-    // Debug 
-    std::cout << "Loading basic foods from: " << basicFoodsFile << std::endl;
-
     std::ifstream inBasic(basicFoodsFile);
     if (!inBasic) {
         std::cerr << "Failed to open basic foods file: " << basicFoodsFile << std::endl;
         return;
     }
+
     std::string line;
     while (std::getline(inBasic, line)) {
         if (line.empty() || line[0] == '#') continue;
+    
         std::stringstream ss(line);
-        std::string id, keywordStr, calStr;
-        std::getline(ss, id, ';');
-        std::getline(ss, keywordStr, ';');
-        std::getline(ss, calStr);
-        // Trim trailing whitespace from id
-        id.erase(id.find_last_not_of(" \n\r\t")+1);
-        // Parse keywords
-        std::vector<std::string> keywords;
-        std::stringstream ks(keywordStr);
-        std::string kw;
-        while (std::getline(ks, kw, ',')) {
-            kw.erase(kw.find_last_not_of(" \n\r\t")+1);
-            keywords.push_back(kw);
+        std::string id, name, keywordStr, calStr, proteinStr, carbStr, fatStr, satFatStr, fiberStr, vitaminStr, mineralStr;
+    
+        // Attempt to extract all fields
+        if (!std::getline(ss, id, ';') || !std::getline(ss, name, ';') || !std::getline(ss, keywordStr, ';') ||
+            !std::getline(ss, calStr, ';') || !std::getline(ss, proteinStr, ';') || !std::getline(ss, carbStr, ';') ||
+            !std::getline(ss, fatStr, ';') || !std::getline(ss, satFatStr, ';') || !std::getline(ss, fiberStr, ';') ||
+            !std::getline(ss, vitaminStr, ';') || !std::getline(ss, mineralStr)) {
+            std::cerr << "❌ Skipping malformed line (not enough fields):\n  " << line << "\n";
+            continue;
         }
-        double calories = std::stod(calStr);
-        basicFoods.push_back(std::make_shared<BasicFood>(id, keywords, calories));
+    
+        try {
+            // Parse keywords
+            std::vector<std::string> keywords;
+            std::stringstream ks(keywordStr);
+            std::string kw;
+            while (std::getline(ks, kw, ',')) {
+                kw.erase(kw.find_last_not_of(" \n\r\t") + 1);
+                keywords.push_back(kw);
+            }
+    
+            // Track max ID for auto-ID generation
+            if (id.rfind("b_", 0) == 0) {
+                int num = std::stoi(id.substr(2));
+                basicIdCounter = std::max(basicIdCounter, num);
+            }
+    
+            // Convert all numeric fields safely
+            double calories = std::stod(calStr);
+            double protein = std::stod(proteinStr);
+            double carbs = std::stod(carbStr);
+            double fat = std::stod(fatStr);
+            double satFat = std::stod(satFatStr);
+            double fiber = std::stod(fiberStr);
+    
+            auto food = std::make_shared<BasicFood>(
+                id, name, keywords,
+                calories, protein, carbs, fat, satFat, fiber,
+                vitaminStr, mineralStr
+            );
+    
+            basicFoods.push_back(food);
+    
+        } catch (const std::invalid_argument& e) {
+            std::cerr << "❌ Invalid numeric value in line:\n  " << line << "\n  → " << e.what() << "\n";
+        } catch (const std::exception& e) {
+            std::cerr << "❌ Failed to load line:\n  " << line << "\n  → " << e.what() << "\n";
+        }
     }
+    
     inBasic.close();
 
-    // Load composite foods from text file
     std::ifstream inComp(compositeFoodsFile);
     if (!inComp) {
         std::cerr << "Failed to open composite foods file: " << compositeFoodsFile << std::endl;
         return;
     }
+
     while (std::getline(inComp, line)) {
         if (line.empty() || line[0] == '#') continue;
         std::stringstream ss(line);
-        std::string id, keywordStr, compStr;
+        std::string id, name, keywordStr, compStr;
+
         std::getline(ss, id, ';');
+        std::getline(ss, name, ';');
         std::getline(ss, keywordStr, ';');
         std::getline(ss, compStr);
-        id.erase(id.find_last_not_of(" \n\r\t")+1);
-        // Parse keywords
+
         std::vector<std::string> keywords;
         std::stringstream ks(keywordStr);
         std::string kw;
@@ -74,8 +106,13 @@ void FoodDatabase::loadDatabase() {
             kw.erase(kw.find_last_not_of(" \n\r\t")+1);
             keywords.push_back(kw);
         }
-        auto compFood = std::make_shared<CompositeFood>(id, keywords);
-        // Parse components: "food_id:servings,food_id:servings,..."
+
+        if (id.rfind("c_", 0) == 0) {
+            int num = std::stoi(id.substr(2));
+            compositeIdCounter = std::max(compositeIdCounter, num);
+        }
+
+        auto compFood = std::make_shared<CompositeFood>(id, name, keywords);
         std::stringstream cs(compStr);
         std::string comp;
         while (std::getline(cs, comp, ',')) {
@@ -89,7 +126,7 @@ void FoodDatabase::loadDatabase() {
                 if (component) {
                     compFood->addComponent(component, servings);
                 } else {
-                    std::cerr << "Component food with ID " << fid 
+                    std::cerr << "Component food with ID " << fid
                               << " not found for composite food " << id << std::endl;
                 }
             }
@@ -100,7 +137,6 @@ void FoodDatabase::loadDatabase() {
 }
 
 void FoodDatabase::saveDatabase() const {
-    // Save basic foods to text file
     std::ofstream outBasic(basicFoodsFile);
     if (!outBasic) {
         std::cerr << "Failed to open file for writing: " << basicFoodsFile << std::endl;
@@ -109,40 +145,48 @@ void FoodDatabase::saveDatabase() const {
     for (const auto& food : basicFoods) {
         auto basic = std::dynamic_pointer_cast<BasicFood>(food);
         if (basic) {
-            outBasic << basic->getId() << ";";
+            outBasic << basic->getId() << ";" << basic->getName() << ";";
+
             auto keywords = basic->getKeywords();
             for (size_t i = 0; i < keywords.size(); ++i) {
                 outBasic << keywords[i];
-                if (i < keywords.size() - 1)
-                    outBasic << ",";
+                if (i < keywords.size() - 1) outBasic << ",";
             }
-            outBasic << ";" << basic->getCalories() << "\n";
+
+            outBasic << ";" << basic->getCalories()
+                     << ";" << basic->getProtein()
+                     << ";" << basic->getCarbs()
+                     << ";" << basic->getFat()
+                     << ";" << basic->getSaturatedFat()
+                     << ";" << basic->getFiber()
+                     << ";" << basic->getVitamins()
+                     << ";" << basic->getMinerals() << "\n";
         }
     }
     outBasic.close();
 
-    // Save composite foods to text file
     std::ofstream outComp(compositeFoodsFile);
     if (!outComp) {
         std::cerr << "Failed to open file for writing: " << compositeFoodsFile << std::endl;
         return;
     }
+
     for (const auto& food : compositeFoods) {
         auto comp = std::dynamic_pointer_cast<CompositeFood>(food);
         if (comp) {
-            outComp << comp->getId() << ";";
+            outComp << comp->getId() << ";" << comp->getName() << ";";
+
             auto keywords = comp->getKeywords();
             for (size_t i = 0; i < keywords.size(); ++i) {
                 outComp << keywords[i];
-                if (i < keywords.size() - 1)
-                    outComp << ",";
+                if (i < keywords.size() - 1) outComp << ",";
             }
+
             outComp << ";";
             const auto& components = comp->getComponents();
             for (size_t i = 0; i < components.size(); ++i) {
                 outComp << components[i].first->getId() << ":" << components[i].second;
-                if (i < components.size() - 1)
-                    outComp << ",";
+                if (i < components.size() - 1) outComp << ",";
             }
             outComp << "\n";
         }
@@ -164,4 +208,12 @@ const std::vector<std::shared_ptr<Food>>& FoodDatabase::getBasicFoods() const {
 
 const std::vector<std::shared_ptr<Food>>& FoodDatabase::getCompositeFoods() const {
     return compositeFoods;
+}
+
+std::string FoodDatabase::generateBasicFoodId() {
+    return "b_" + std::to_string(++basicIdCounter);
+}
+
+std::string FoodDatabase::generateCompositeFoodId() {
+    return "c_" + std::to_string(++compositeIdCounter);
 }

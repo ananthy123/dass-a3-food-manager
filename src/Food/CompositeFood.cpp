@@ -1,8 +1,9 @@
 #include "CompositeFood.h"
 #include <iostream>
 
-CompositeFood::CompositeFood(const std::string& id, const std::vector<std::string>& keywords)
-    : Food(id, keywords) {}
+CompositeFood::CompositeFood(const std::string& id, const std::string& name,
+                             const std::vector<std::string>& keywords)
+    : Food(id, name, keywords) {}
 
 void CompositeFood::addComponent(const std::shared_ptr<Food>& food, double servings) {
     components.push_back(std::make_pair(food, servings));
@@ -17,7 +18,9 @@ double CompositeFood::getCalories() const {
 }
 
 void CompositeFood::display() const {
-    std::cout << "CompositeFood: " << id << ", Total Calories: " << getCalories() << std::endl;
+    std::cout << "CompositeFood: " << name << " (" << id << "), Total Calories: "
+              << getCalories() << " kcal" << std::endl;
+
     for (const auto& comp : components) {
         std::cout << "  Component: ";
         comp.first->display();

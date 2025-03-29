@@ -1,7 +1,7 @@
-PBJ Sandwich; sandwich,peanut,jelly;Peanut Butter:1,Jelly:1
-Cheese Sandwich; sandwich,cheese;Cheddar Cheese:1
-Grilled Chicken Meal; meal,grilled,chicken;Broccoli:1,Carrot:1
-Breakfast Bowl; breakfast,oatmeal,fruit;Banana:1,Milk:0.5
-Fruit Salad;salad,fruit;Apple:2
-Fruit Salad;salad,fruit;Apple:2
-Fruit Salad;salad,fruit;Apple:2
+# id; name; keywords; component_id:servings,...
+
+c_1; PBJ Sandwich; sandwich,peanut,jelly; b_4:2,b_3:1,b_5:1
+c_2; Cheese Sandwich; sandwich,cheese; b_4:2,b_8:1
+c_3; Grilled Chicken Meal; meal,grilled,chicken; b_9:1,b_10:1,b_11:1
+c_4; Breakfast Bowl; breakfast,oatmeal,fruit; b_12:1,b_2:1,b_7:0.5
+c_5; Fruit Salad; salad,fruit; b_1:2,b_2:1

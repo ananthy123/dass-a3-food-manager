@@ -11,7 +11,8 @@ private:
     // Each component is a pair: (Food pointer, servings)
     std::vector<std::pair<std::shared_ptr<Food>, double>> components;
 public:
-    CompositeFood(const std::string& id, const std::vector<std::string>& keywords);
+    CompositeFood(const std::string& id, const std::string& name, const std::vector<std::string>& keywords);
+
     void addComponent(const std::shared_ptr<Food>& food, double servings);
     double getCalories() const override;
     void display() const override;

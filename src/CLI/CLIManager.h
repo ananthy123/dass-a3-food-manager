@@ -11,21 +11,23 @@ private:
     DailyLog log;
     DietProfile profile;
 
+    // Menu + handlers
     void showMenu();
-    void handleViewBasicFoods();
-    void handleViewCompositeFoods();
-    void handleAddBasicFood();
-    void handleAddCompositeFood();
-    void handleAddLogEntry();
-    void handleViewLog();
-    void handleViewProfile();
+    void handleViewBasicFoods();       // Show all basic foods
+    void handleViewCompositeFoods();   // Show all composite foods
+    void handleAddBasicFood();         // Add a basic food (name + nutrition)
+    void handleAddCompositeFood();     // Add a composite food (name + components)
+    void handleAddLogEntry();          // Log a food entry
+    void handleViewLog();              // Display food log
+    void handleViewProfile();          // Show profile info
 
+    // Helpers
     std::vector<std::string> getKeywordsInput();
     void pause();
 
 public:
     CLIManager();
-    void start();
+    void start();                      // Start main loop
 };
 
 #endif // CLI_MANAGER_H
