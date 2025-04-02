@@ -5,6 +5,7 @@
 
 class DietProfile {
 private:
+    std::string name;
     std::string gender;
     double height; // in centimeters
     int age;
@@ -12,7 +13,7 @@ private:
     double activityLevel; // activity multiplier
     int method; // method to calculate target calories
 public:
-    DietProfile(const std::string& gender, double height, int age, double weight, double activityLevel, int method = 1);
+    DietProfile(const std::string& name, const std::string& gender, double height, int age, double weight, double activityLevel, int method = 1);
     double calculateTargetCalories() const;
     void displayProfile() const;
 };

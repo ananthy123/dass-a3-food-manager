@@ -60,7 +60,7 @@ bool validateBasicFoodsFile(const std::string& filename) {
 CLIManager::CLIManager()
     : db(BASIC_FOODS_FILE, COMPOSITE_FOODS_FILE),
       log(DAILY_LOG_FILE),
-      profile("male", 180, 25, 75, 1.55) {
+      profile("Ananth", "male", 180, 25, 75, 1.55) {
 
     // Validate file before loading
     if (!validateBasicFoodsFile(BASIC_FOODS_FILE)) {

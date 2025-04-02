@@ -1,8 +1,8 @@
 #include "DietProfile.h"
 #include <iostream>
 
-DietProfile::DietProfile(const std::string& gender, double height, int age, double weight, double activityLevel, int method)
-    : gender(gender), height(height), age(age), weight(weight), activityLevel(activityLevel), method(method) {}
+DietProfile::DietProfile(const std::string& name,const std::string& gender, double height, int age, double weight, double activityLevel, int method)
+    : name(name) , gender(gender), height(height), age(age), weight(weight), activityLevel(activityLevel), method(method) {}
 
 double DietProfile::calculateTargetCalories() const {
     // Method 1: Mifflin-St Jeor Equation
@@ -26,8 +26,18 @@ double DietProfile::calculateTargetCalories() const {
 }
 
 void DietProfile::displayProfile() const {
-    std::cout << "Gender: " << gender << ", Height: " << height 
-              << " cm, Age: " << age << ", Weight: " << weight 
-              << " kg, Activity Level: " << activityLevel 
-              << ", Target Calories: " << calculateTargetCalories() << std::endl;
+    std::cout << "-------------------------------\n";
+    std::cout << "\tDiet Profile\n";
+    std::cout << "-------------------------------\n";
+
+    std::cout << "Name: " << name << "\n";
+    std::cout << "Gender: " << gender << "\n";
+    std::cout << "Height: " << height << " cm\n";
+    std::cout << "Age: " << age << " years\n";
+    std::cout << "Weight: " << weight << " kg\n";
+    std::cout << "Activity Level: " << activityLevel << "\n";
+    std::cout << "Method: " << (method == 1 ? "Mifflin-St Jeor" : "Harris-Benedict") << "\n";
+    std::cout << "Target Calories: " << calculateTargetCalories() << " kcal\n";
+
+    std::cout << "---------------------------------\n";
 }
