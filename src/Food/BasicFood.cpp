@@ -1,5 +1,8 @@
 #include "BasicFood.h"
 #include <iostream>
+#include <iomanip>
+
+namespace diet {
 
 BasicFood::BasicFood(const std::string& id, const std::string& name,
                      const std::vector<std::string>& keywords, double calories,
@@ -28,8 +31,12 @@ std::string BasicFood::getMinerals() const { return minerals; }
 void BasicFood::display() const {
     std::cout << "BasicFood: " << name << " (" << id << ")\n"
               << "  Calories: " << calories << " kcal\n"
-              << "  Protein: " << protein << "g, Carbs: " << carbs
-              << "g, Fat: " << fat << "g, Sat Fat: " << saturatedFat
-              << "g, Fiber: " << fiber << "g\n"
+              << "  Protein: " << std::fixed << std::setprecision(1) << protein << "g, "
+              << "Carbs: " << carbs << "g, "
+              << "Fat: " << fat << "g, "
+              << "Sat Fat: " << saturatedFat << "g, "
+              << "Fiber: " << fiber << "g\n"
               << "  Vitamins: " << vitamins << ", Minerals: " << minerals << "\n";
 }
+
+} // namespace diet

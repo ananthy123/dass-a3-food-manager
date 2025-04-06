@@ -1,25 +1,97 @@
 #include "FoodDatabase.h"
-#include "../Food/BasicFood.h"
-#include "../Food/CompositeFood.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
 #include <algorithm>
 
+namespace diet {
+
+// DatabaseException implementation
+FoodDatabase::DatabaseException::DatabaseException(const std::string& message)
+    : std::runtime_error(message) {}
+
+// Constructor
 FoodDatabase::FoodDatabase(const std::string& basicFile, const std::string& compositeFile)
     : basicFoodsFile(basicFile), compositeFoodsFile(compositeFile) {}
 
+// Helper method to parse keywords
+std::vector<std::string> FoodDatabase::parseKeywords(const std::string& keywordStr) const {
+    std::vector<std::string> keywords;
+    std::stringstream ks(keywordStr);
+    std::string kw;
+    while (std::getline(ks, kw, ',')) {
+        // Trim whitespace
+        kw.erase(0, kw.find_first_not_of(" \t\r\n"));
+        kw.erase(kw.find_last_not_of(" \t\r\n") + 1);
+        if (!kw.empty()) {
+            keywords.push_back(kw);
+        }
+    }
+    return keywords;
+}
+
 std::shared_ptr<Food> FoodDatabase::findFoodById(const std::string& id) const {
+    // Check basic foods first
     for (const auto& food : basicFoods) {
-        if (food->getId() == id) return food;
+        if (food->getId() == id) {
+            return food;
+        }
     }
+    
+    // Then check composite foods
     for (const auto& food : compositeFoods) {
-        if (food->getId() == id) return food;
+        if (food->getId() == id) {
+            return food;
+        }
     }
-    return nullptr;
+    
+    return nullptr; // Not found
+}
+
+std::vector<std::shared_ptr<Food>> FoodDatabase::findFoodsByKeyword(const std::string& keyword) const {
+    std::vector<std::shared_ptr<Food>> results;
+    std::string lowerKeyword = keyword;
+    std::transform(lowerKeyword.begin(), lowerKeyword.end(), lowerKeyword.begin(), ::tolower);
+    
+    // Lambda to check if a food's keywords contain our search term
+    auto hasKeyword = [&lowerKeyword](const std::shared_ptr<Food>& food) {
+        const auto& keywords = food->getKeywords();
+        for (const auto& kw : keywords) {
+            std::string lowerKw = kw;
+            std::transform(lowerKw.begin(), lowerKw.end(), lowerKw.begin(), ::tolower);
+            if (lowerKw.find(lowerKeyword) != std::string::npos) {
+                return true;
+            }
+        }
+        // Also check the name
+        std::string lowerName = food->getName();
+        std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), ::tolower);
+        return lowerName.find(lowerKeyword) != std::string::npos;
+    };
+    
+    // Search in basic foods
+    for (const auto& food : basicFoods) {
+        if (hasKeyword(food)) {
+            results.push_back(food);
+        }
+    }
+    
+    // Search in composite foods
+    for (const auto& food : compositeFoods) {
+        if (hasKeyword(food)) {
+            results.push_back(food);
+        }
+    }
+    
+    return results;
 }
 
 void FoodDatabase::loadDatabase() {
+    // Clear existing data
+    basicFoods.clear();
+    compositeFoods.clear();
+    
+    // Load basic foods
     std::ifstream inBasic(basicFoodsFile);
     if (!inBasic) {
         std::cerr << "Failed to open basic foods file: " << basicFoodsFile << std::endl;
@@ -44,13 +116,7 @@ void FoodDatabase::loadDatabase() {
     
         try {
             // Parse keywords
-            std::vector<std::string> keywords;
-            std::stringstream ks(keywordStr);
-            std::string kw;
-            while (std::getline(ks, kw, ',')) {
-                kw.erase(kw.find_last_not_of(" \n\r\t") + 1);
-                keywords.push_back(kw);
-            }
+            auto keywords = parseKeywords(keywordStr);
     
             // Track max ID for auto-ID generation
             if (id.rfind("b_", 0) == 0) {
@@ -83,6 +149,7 @@ void FoodDatabase::loadDatabase() {
     
     inBasic.close();
 
+    // Load composite foods
     std::ifstream inComp(compositeFoodsFile);
     if (!inComp) {
         std::cerr << "Failed to open composite foods file: " << compositeFoodsFile << std::endl;
@@ -91,6 +158,7 @@ void FoodDatabase::loadDatabase() {
 
     while (std::getline(inComp, line)) {
         if (line.empty() || line[0] == '#') continue;
+        
         std::stringstream ss(line);
         std::string id, name, keywordStr, compStr;
 
@@ -99,13 +167,7 @@ void FoodDatabase::loadDatabase() {
         std::getline(ss, keywordStr, ';');
         std::getline(ss, compStr);
 
-        std::vector<std::string> keywords;
-        std::stringstream ks(keywordStr);
-        std::string kw;
-        while (std::getline(ks, kw, ',')) {
-            kw.erase(kw.find_last_not_of(" \n\r\t")+1);
-            keywords.push_back(kw);
-        }
+        auto keywords = parseKeywords(keywordStr);
 
         if (id.rfind("c_", 0) == 0) {
             int num = std::stoi(id.substr(2));
@@ -113,6 +175,8 @@ void FoodDatabase::loadDatabase() {
         }
 
         auto compFood = std::make_shared<CompositeFood>(id, name, keywords);
+        
+        // Parse components (format: "foodId:servings,foodId:servings,...")
         std::stringstream cs(compStr);
         std::string comp;
         while (std::getline(cs, comp, ',')) {
@@ -120,14 +184,21 @@ void FoodDatabase::loadDatabase() {
             auto pos = comp.find(':');
             if (pos != std::string::npos) {
                 std::string fid = comp.substr(0, pos);
-                fid.erase(fid.find_last_not_of(" \n\r\t")+1);
-                double servings = std::stod(comp.substr(pos + 1));
-                auto component = findFoodById(fid);
-                if (component) {
-                    compFood->addComponent(component, servings);
-                } else {
-                    std::cerr << "Component food with ID " << fid
-                              << " not found for composite food " << id << std::endl;
+                // Trim whitespace
+                fid.erase(0, fid.find_first_not_of(" \t\r\n"));
+                fid.erase(fid.find_last_not_of(" \t\r\n") + 1);
+                
+                try {
+                    double servings = std::stod(comp.substr(pos + 1));
+                    auto component = findFoodById(fid);
+                    if (component) {
+                        compFood->addComponent(component, servings);
+                    } else {
+                        std::cerr << "Component food with ID " << fid
+                                << " not found for composite food " << id << std::endl;
+                    }
+                } catch (const std::exception& e) {
+                    std::cerr << "Error parsing component servings: " << comp << " - " << e.what() << std::endl;
                 }
             }
         }
@@ -137,17 +208,21 @@ void FoodDatabase::loadDatabase() {
 }
 
 void FoodDatabase::saveDatabase() const {
+    // Save basic foods
     std::ofstream outBasic(basicFoodsFile);
     if (!outBasic) {
-        std::cerr << "Failed to open file for writing: " << basicFoodsFile << std::endl;
-        return;
+        throw DatabaseException("Failed to open file for writing: " + basicFoodsFile);
     }
+    
+    outBasic << "# Format: id;name;keywords;calories;protein;carbs;fat;saturatedFat;fiber;vitamins;minerals\n";
+    
     for (const auto& food : basicFoods) {
         auto basic = std::dynamic_pointer_cast<BasicFood>(food);
         if (basic) {
             outBasic << basic->getId() << ";" << basic->getName() << ";";
 
-            auto keywords = basic->getKeywords();
+            // Write keywords as comma-separated list
+            const auto& keywords = basic->getKeywords();
             for (size_t i = 0; i < keywords.size(); ++i) {
                 outBasic << keywords[i];
                 if (i < keywords.size() - 1) outBasic << ",";
@@ -165,24 +240,30 @@ void FoodDatabase::saveDatabase() const {
     }
     outBasic.close();
 
+    // Save composite foods
     std::ofstream outComp(compositeFoodsFile);
     if (!outComp) {
-        std::cerr << "Failed to open file for writing: " << compositeFoodsFile << std::endl;
-        return;
+        throw DatabaseException("Failed to open file for writing: " + compositeFoodsFile);
     }
-
+    
+    outComp << "# Format: id;name;keywords;components\n";
+    outComp << "# Components format: foodId:servings,foodId:servings,...\n";
+    
     for (const auto& food : compositeFoods) {
         auto comp = std::dynamic_pointer_cast<CompositeFood>(food);
         if (comp) {
             outComp << comp->getId() << ";" << comp->getName() << ";";
 
-            auto keywords = comp->getKeywords();
+            // Write keywords
+            const auto& keywords = comp->getKeywords();
             for (size_t i = 0; i < keywords.size(); ++i) {
                 outComp << keywords[i];
                 if (i < keywords.size() - 1) outComp << ",";
             }
 
             outComp << ";";
+            
+            // Write components
             const auto& components = comp->getComponents();
             for (size_t i = 0; i < components.size(); ++i) {
                 outComp << components[i].first->getId() << ":" << components[i].second;
@@ -195,11 +276,71 @@ void FoodDatabase::saveDatabase() const {
 }
 
 void FoodDatabase::addBasicFood(const std::shared_ptr<Food>& food) {
+    if (!food) {
+        throw DatabaseException("Cannot add null food");
+    }
+    
+    // Verify it's actually a BasicFood
+    if (!std::dynamic_pointer_cast<BasicFood>(food)) {
+        throw DatabaseException("Food is not a BasicFood instance");
+    }
+    
+    // Check for ID conflicts
+    if (findFoodById(food->getId())) {
+        throw DatabaseException("A food with ID " + food->getId() + " already exists");
+    }
+    
     basicFoods.push_back(food);
 }
 
 void FoodDatabase::addCompositeFood(const std::shared_ptr<Food>& food) {
+    if (!food) {
+        throw DatabaseException("Cannot add null food");
+    }
+    
+    // Verify it's actually a CompositeFood
+    if (!std::dynamic_pointer_cast<CompositeFood>(food)) {
+        throw DatabaseException("Food is not a CompositeFood instance");
+    }
+    
+    // Check for ID conflicts
+    if (findFoodById(food->getId())) {
+        throw DatabaseException("A food with ID " + food->getId() + " already exists");
+    }
+    
     compositeFoods.push_back(food);
+}
+
+bool FoodDatabase::removeFood(const std::string& id) {
+    // First check if this food is used as a component in any composite food
+    for (const auto& food : compositeFoods) {
+        auto comp = std::dynamic_pointer_cast<CompositeFood>(food);
+        if (comp) {
+            for (const auto& component : comp->getComponents()) {
+                if (component.first->getId() == id) {
+                    throw DatabaseException("Cannot remove food " + id + " because it is used in " + comp->getId());
+                }
+            }
+        }
+    }
+    
+    // Now try to remove from basic foods
+    for (auto it = basicFoods.begin(); it != basicFoods.end(); ++it) {
+        if ((*it)->getId() == id) {
+            basicFoods.erase(it);
+            return true;
+        }
+    }
+    
+    // Then try composite foods
+    for (auto it = compositeFoods.begin(); it != compositeFoods.end(); ++it) {
+        if ((*it)->getId() == id) {
+            compositeFoods.erase(it);
+            return true;
+        }
+    }
+    
+    return false; // Not found
 }
 
 const std::vector<std::shared_ptr<Food>>& FoodDatabase::getBasicFoods() const {
@@ -217,3 +358,5 @@ std::string FoodDatabase::generateBasicFoodId() {
 std::string FoodDatabase::generateCompositeFoodId() {
     return "c_" + std::to_string(++compositeIdCounter);
 }
+
+} // namespace diet

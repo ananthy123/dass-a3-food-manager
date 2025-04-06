@@ -5,17 +5,99 @@
 #include <sstream>
 #include <limits>
 #include <fstream>
+#include <regex>
+#include <iomanip>
 
-using namespace std;
+namespace diet {
 
-const std::string BASIC_FOODS_FILE = "../data/basic_foods.txt";
-const std::string COMPOSITE_FOODS_FILE = "../data/composite_foods.txt";
-const std::string DAILY_LOG_FILE = "../data/daily_log.txt";
+// Command implementations for menu items
+class ViewBasicFoodsCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    ViewBasicFoodsCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleViewBasicFoods(); }
+    std::string getDescription() const override { return "View Basic Foods"; }
+};
 
-bool validateBasicFoodsFile(const std::string& filename) {
+class ViewCompositeFoodsCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    ViewCompositeFoodsCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleViewCompositeFoods(); }
+    std::string getDescription() const override { return "View Composite Foods"; }
+};
+
+class AddBasicFoodCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    AddBasicFoodCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleAddBasicFood(); }
+    std::string getDescription() const override { return "Add Basic Food"; }
+};
+
+class AddCompositeFoodCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    AddCompositeFoodCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleAddCompositeFood(); }
+    std::string getDescription() const override { return "Add Composite Food"; }
+};
+
+class AddLogEntryCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    AddLogEntryCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleAddLogEntry(); }
+    std::string getDescription() const override { return "Log Food Consumption"; }
+};
+
+class ViewLogCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    ViewLogCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleViewLog(); }
+    std::string getDescription() const override { return "View Daily Log"; }
+};
+
+class ViewProfileCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    ViewProfileCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleViewProfile(); }
+    std::string getDescription() const override { return "View Diet Profile"; }
+};
+
+class SearchFoodsCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    SearchFoodsCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleSearchFoods(); }
+    std::string getDescription() const override { return "Search Foods"; }
+};
+
+class ExitCommand : public Command {
+private:
+    CLIManager& cli;
+public:
+    ExitCommand(CLIManager& cli) : cli(cli) {}
+    void execute() override { cli.handleExit(); }
+    std::string getDescription() const override { return "Exit"; }
+};
+
+// CLIManager implementation
+bool CLIManager::validateBasicFoodsFile(const std::string& filename) {
     std::ifstream file(filename);
     if (!file) {
-        std::cerr << "❌ File not found: " << filename << std::endl;
+        std::cerr << "❌ File not found or cannot be accessed: " << filename << std::endl;
+        std::cerr << "Please ensure the file exists and has proper read permissions." << std::endl;
         return false;
     }
 
@@ -57,74 +139,129 @@ bool validateBasicFoodsFile(const std::string& filename) {
     return !hasError;
 }
 
-CLIManager::CLIManager()
-    : db(BASIC_FOODS_FILE, COMPOSITE_FOODS_FILE),
-      log(DAILY_LOG_FILE),
-      profile("Ananth", "male", 180, 25, 75, 1.55) {
+CLIManager::CLIManager(const std::string& basicFoodsPath, 
+                       const std::string& compositeFoodsPath, 
+                       const std::string& logPath)
+    : db(basicFoodsPath, compositeFoodsPath),
+      log(logPath),
+      profile("Ananth", "male", 180, 25, 75, 1.55),
+      running(false),
+      basicFoodsFile(basicFoodsPath),
+      compositeFoodsFile(compositeFoodsPath),
+      dailyLogFile(logPath) {
 
-    // Validate file before loading
-    if (!validateBasicFoodsFile(BASIC_FOODS_FILE)) {
-        std::cerr << "🚫 Invalid format in basic_foods.txt. Fix it and rerun.\n";
-        exit(1); // 🔁 STOP program from continuing
+    // Check if all required files exist or are accessible
+    bool filesOK = true;
+    
+    // Validate basic foods file before loading
+    if (!validateBasicFoodsFile(basicFoodsFile)) {
+        std::cerr << "🚫 Invalid format or inaccessible basic foods file: " << basicFoodsFile << std::endl;
+        std::cerr << "Fix the file and rerun the application." << std::endl;
+        filesOK = false;
     }
     
-    db.loadDatabase(); // ✅ only called if validation passed
+    // Check if composite foods file exists and is accessible
+    std::ifstream compFile(compositeFoodsFile);
+    if (!compFile) {
+        std::cerr << "⚠️ Composite foods file not found or inaccessible: " << compositeFoodsFile << std::endl;
+        std::cerr << "A new file will be created when saving data." << std::endl;
+        // Not fatal, will create on save
+    }
     
-
-    log.loadLog();
+    // Check if log file exists and is accessible
+    std::ifstream logFile(dailyLogFile);
+    if (!logFile) {
+        std::cerr << "⚠️ Log file not found or inaccessible: " << dailyLogFile << std::endl;
+        std::cerr << "A new file will be created when saving data." << std::endl;
+        // Not fatal, will create on save
+    }
+    
+    if (!filesOK) {
+        throw std::runtime_error("Critical files are missing or have invalid format");
+    }
+    
+    try {
+        db.loadDatabase(); // Only called if validation passed
+        log.loadLog();
+    } catch (const std::exception& e) {
+        std::cerr << "Error loading data: " << e.what() << std::endl;
+        throw std::runtime_error("Failed to load database: " + std::string(e.what()));
+    }
+    
+    // Initialize menu commands
+    initializeMenu();
 }
 
+void CLIManager::initializeMenu() {
+    menuCommands.push_back(std::make_unique<ViewBasicFoodsCommand>(*this));
+    menuCommands.push_back(std::make_unique<ViewCompositeFoodsCommand>(*this));
+    menuCommands.push_back(std::make_unique<AddBasicFoodCommand>(*this));
+    menuCommands.push_back(std::make_unique<AddCompositeFoodCommand>(*this));
+    menuCommands.push_back(std::make_unique<AddLogEntryCommand>(*this));
+    menuCommands.push_back(std::make_unique<ViewLogCommand>(*this));
+    menuCommands.push_back(std::make_unique<ViewProfileCommand>(*this));
+    menuCommands.push_back(std::make_unique<SearchFoodsCommand>(*this));
+    menuCommands.push_back(std::make_unique<ExitCommand>(*this));
+}
 
 void CLIManager::start() {
-    int choice;
-    do {
+    running = true;
+    
+    while (running) {
         showMenu();
-        std::cin >> choice;
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-        switch (choice) {
-            case 1: handleViewBasicFoods(); break;
-            case 2: handleViewCompositeFoods(); break;
-            case 3: handleAddBasicFood(); break;
-            case 4: handleAddCompositeFood(); break;
-            case 5: handleAddLogEntry(); break;
-            case 6: handleViewLog(); break;
-            case 7: handleViewProfile(); break;
-            case 0: break;
-            default: std::cout << "Invalid option.\n"; pause(); break;
+        
+        int choice = getIntInput("Choose an option: ", 0, menuCommands.size());
+        
+        if (choice >= 0 && choice < static_cast<int>(menuCommands.size())) {
+            menuCommands[choice]->execute();
+        } else {
+            std::cout << "Invalid option.\n";
+            pause();
         }
-    } while (choice != 0);
+    }
 
-    db.saveDatabase();
-    log.saveLog();
-    std::cout << "Data saved. Goodbye!\n";
+    // Save data before exiting
+    try {
+        db.saveDatabase();
+        log.saveLog();
+        std::cout << "Data saved successfully. Goodbye!\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error saving data: " << e.what() << "\n";
+    }
 }
 
-void CLIManager::showMenu() {
+void CLIManager::showMenu() const {
     std::cout << "\n=== YADA: Yet Another Diet Assistant ===\n";
-    std::cout << "1. View Basic Foods\n";
-    std::cout << "2. View Composite Foods\n";
-    std::cout << "3. Add Basic Food\n";
-    std::cout << "4. Add Composite Food\n";
-    std::cout << "5. Log Food Consumption\n";
-    std::cout << "6. View Daily Log\n";
-    std::cout << "7. View Diet Profile\n";
-    std::cout << "0. Exit\n";
-    std::cout << "Choose an option: ";
+    
+    for (size_t i = 0; i < menuCommands.size(); ++i) {
+        std::cout << i << ". " << menuCommands[i]->getDescription() << "\n";
+    }
 }
 
 void CLIManager::handleViewBasicFoods() {
     std::cout << "\n--- Basic Foods ---\n";
-    for (const auto& food : db.getBasicFoods()) {
-        food->display();
+    const auto& foods = db.getBasicFoods();
+    
+    if (foods.empty()) {
+        std::cout << "No basic foods found.\n";
+    } else {
+        for (const auto& food : foods) {
+            food->display();
+        }
     }
     pause();
 }
 
 void CLIManager::handleViewCompositeFoods() {
     std::cout << "\n--- Composite Foods ---\n";
-    for (const auto& food : db.getCompositeFoods()) {
-        food->display();
+    const auto& foods = db.getCompositeFoods();
+    
+    if (foods.empty()) {
+        std::cout << "No composite foods found.\n";
+    } else {
+        for (const auto& food : foods) {
+            food->display();
+        }
     }
     pause();
 }
@@ -136,17 +273,14 @@ void CLIManager::handleAddBasicFood() {
 
     auto keywords = getKeywordsInput();
 
-    double calories, protein, carbs, fat, satFat, fiber;
+    double calories = getNumericInput("Calories: ");
+    double protein = getNumericInput("Protein (g): ");
+    double carbs = getNumericInput("Carbs (g): ");
+    double fat = getNumericInput("Fat (g): ");
+    double satFat = getNumericInput("Saturated Fat (g): ");
+    double fiber = getNumericInput("Fiber (g): ");
+
     std::string vitamins, minerals;
-
-    std::cout << "Calories: "; std::cin >> calories;
-    std::cout << "Protein (g): "; std::cin >> protein;
-    std::cout << "Carbs (g): "; std::cin >> carbs;
-    std::cout << "Fat (g): "; std::cin >> fat;
-    std::cout << "Saturated Fat (g): "; std::cin >> satFat;
-    std::cout << "Fiber (g): "; std::cin >> fiber;
-    std::cin.ignore();
-
     std::cout << "Vitamins (comma-separated): ";
     std::getline(std::cin, vitamins);
     std::cout << "Minerals (comma-separated): ";
@@ -154,12 +288,16 @@ void CLIManager::handleAddBasicFood() {
 
     std::string id = db.generateBasicFoodId();
 
-    auto food = std::make_shared<BasicFood>(
-        id, name, keywords, calories, protein, carbs, fat, satFat, fiber, vitamins, minerals
-    );
-    db.addBasicFood(food);
-
-    std::cout << "Basic food added with ID: " << id << "\n";
+    try {
+        auto food = std::make_shared<BasicFood>(
+            id, name, keywords, calories, protein, carbs, fat, satFat, fiber, vitamins, minerals
+        );
+        db.addBasicFood(food);
+        std::cout << "Basic food added with ID: " << id << "\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error adding food: " << e.what() << "\n";
+    }
+    
     pause();
 }
 
@@ -185,16 +323,22 @@ void CLIManager::handleAddCompositeFood() {
             continue;
         }
 
-        double servings;
-        std::cout << "Enter servings: ";
-        std::cin >> servings;
-        std::cin.ignore();
-
-        comp->addComponent(food, servings);
+        double servings = getNumericInput("Enter servings: ", 0.1);
+        
+        try {
+            comp->addComponent(food, servings);
+        } catch (const std::exception& e) {
+            std::cerr << "Error adding component: " << e.what() << "\n";
+        }
     }
 
-    db.addCompositeFood(comp);
-    std::cout << "Composite food added with ID: " << id << "\n";
+    try {
+        db.addCompositeFood(comp);
+        std::cout << "Composite food added with ID: " << id << "\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error adding composite food: " << e.what() << "\n";
+    }
+    
     pause();
 }
 
@@ -204,18 +348,34 @@ void CLIManager::handleAddLogEntry() {
 
     std::cout << "Enter date (YYYY-MM-DD): ";
     std::getline(std::cin, date);
+    
+    // Validate date format
+    std::regex datePattern(R"(\d{4}-\d{2}-\d{2})");
+    if (!std::regex_match(date, datePattern)) {
+        std::cout << "Invalid date format. Use YYYY-MM-DD.\n";
+        pause();
+        return;
+    }
+    
     std::cout << "Enter food ID: ";
     std::getline(std::cin, id);
-    std::cout << "Servings: ";
-    std::cin >> servings;
-    std::cin.ignore();
-
-    if (db.findFoodById(id)) {
-        log.addEntry({date, id, servings});
-        std::cout << "Log entry added.\n";
-    } else {
-        std::cout << "Food not found.\n";
+    
+    auto food = db.findFoodById(id);
+    if (!food) {
+        std::cout << "Food not found with ID: " << id << "\n";
+        pause();
+        return;
     }
+    
+    servings = getNumericInput("Enter servings: ", 0.1);
+
+    try {
+        log.addEntry(LogEntry(date, id, servings));
+        std::cout << "Log entry added for " << food->getName() << "\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error adding log entry: " << e.what() << "\n";
+    }
+    
     pause();
 }
 
@@ -230,22 +390,111 @@ void CLIManager::handleViewProfile() {
     pause();
 }
 
-std::vector<std::string> CLIManager::getKeywordsInput() {
+void CLIManager::handleSearchFoods() {
+    std::string keyword;
+    std::cout << "Enter search term: ";
+    std::getline(std::cin, keyword);
+    
+    if (keyword.empty()) {
+        std::cout << "Search term cannot be empty.\n";
+        pause();
+        return;
+    }
+    
+    auto results = db.findFoodsByKeyword(keyword);
+    
+    if (results.empty()) {
+        std::cout << "No foods found matching '" << keyword << "'.\n";
+    } else {
+        std::cout << "\n--- Search Results for '" << keyword << "' ---\n";
+        std::cout << "Found " << results.size() << " matching foods:\n";
+        
+        for (const auto& food : results) {
+            food->display();
+        }
+    }
+    
+    pause();
+}
+
+void CLIManager::handleExit() {
+    running = false;
+}
+
+std::vector<std::string> CLIManager::getKeywordsInput() const {
     std::string line;
     std::vector<std::string> keywords;
 
     std::cout << "Enter comma-separated keywords: ";
     std::getline(std::cin, line);
+    
+    if (line.empty()) {
+        return keywords;
+    }
+    
     std::stringstream ss(line);
     std::string keyword;
     while (std::getline(ss, keyword, ',')) {
-        keywords.push_back(keyword);
+        // Trim whitespace
+        keyword.erase(0, keyword.find_first_not_of(" \t\r\n"));
+        keyword.erase(keyword.find_last_not_of(" \t\r\n") + 1);
+        
+        if (!keyword.empty()) {
+            keywords.push_back(keyword);
+        }
     }
 
     return keywords;
 }
 
-void CLIManager::pause() {
+void CLIManager::pause() const {
     std::cout << "Press ENTER to continue...";
     std::cin.get();
 }
+
+bool CLIManager::validateInput(const std::string& input, 
+                               const std::function<bool(const std::string&)>& validator) const {
+    try {
+        return validator(input);
+    } catch (...) {
+        return false;
+    }
+}
+
+double CLIManager::getNumericInput(const std::string& prompt, double min, double max) const {
+    while (true) {
+        std::cout << prompt;
+        std::string input;
+        std::getline(std::cin, input);
+        
+        try {
+            double value = std::stod(input);
+            if (value >= min && value <= max) {
+                return value;
+            }
+            std::cout << "Value must be between " << min << " and " << max << "\n";
+        } catch (...) {
+            std::cout << "Invalid number. Please try again.\n";
+        }
+    }
+}
+
+int CLIManager::getIntInput(const std::string& prompt, int min, int max) const {
+    while (true) {
+        std::cout << prompt;
+        std::string input;
+        std::getline(std::cin, input);
+        
+        try {
+            int value = std::stoi(input);
+            if (value >= min && value <= max) {
+                return value;
+            }
+            std::cout << "Value must be between " << min << " and " << max << "\n";
+        } catch (...) {
+            std::cout << "Invalid number. Please try again.\n";
+        }
+    }
+}
+
+} // namespace diet

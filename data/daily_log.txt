@@ -1,3 +1,5 @@
+# Format: date;foodId;servings
+# Generated on: 2025-04-06 14:23:01
 2025-03-28; b_1;1
 2025-03-28; c_1;1
 2025-03-28; b_7;1

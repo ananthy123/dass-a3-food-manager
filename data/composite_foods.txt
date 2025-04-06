@@ -1,5 +1,7 @@
-c_1; PBJ Sandwich; sandwich,peanut,jelly;b_3:1,b_5:1
-c_2; Cheese Sandwich; sandwich,cheese;b_8:1
-c_3; Grilled Chicken Meal; meal,grilled,chicken;b_10:1,b_11:1
-c_4; Breakfast Bowl; breakfast,oatmeal,fruit;b_2:1,b_7:0.5
-c_5; Fruit Salad; salad,fruit;b_2:1
+# Format: id;name;keywords;components
+# Components format: foodId:servings,foodId:servings,...
+c_1; PBJ Sandwich;sandwich,peanut,jelly;b_3:1,b_5:1
+c_2; Cheese Sandwich;sandwich,cheese;b_8:1
+c_3; Grilled Chicken Meal;meal,grilled,chicken;b_10:1,b_11:1
+c_4; Breakfast Bowl;breakfast,oatmeal,fruit;b_2:1,b_7:0.5
+c_5; Fruit Salad;salad,fruit;b_2:1
