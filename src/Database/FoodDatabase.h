@@ -36,4 +36,5 @@ public:
     std::string generateCompositeFoodId(); // returns "c_1", "c_2", etc.
 };
 
+
 #endif // FOOD_DATABASE_H
