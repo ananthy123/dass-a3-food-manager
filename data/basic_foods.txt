@@ -1,0 +1,14 @@
+b_1; Apple; fruit,apple,red;95;0.3;25;0.2;0.03;4.4; A,C; potassium
+b_2; Banana; fruit,banana,yellow;105;1.3;27;0.3;0.1;3.1; B6,C; potassium
+b_3; Peanut Butter; spread,peanut,butter;190;8;6;16;3.3;2.6; E,B3; magnesium
+b_4; Bread; grain,bread,whole;80;3;15;1;0.2;1.2; B1,B3; iron
+b_5; Jelly; spread,jelly,grape;50;0;13;0;0;0.2; C; iron
+b_6; Egg; protein,egg;78;6.3;0.6;5.3;1.6;0; B12,D; selenium
+b_7; Milk; dairy,milk;150;8;12;8;5;0; A,D; calcium
+b_8; Cheddar Cheese; dairy,cheese,cheddar;113;7;0.4;9;6;0; A,B12; calcium
+b_9; Chicken Breast; protein,chicken;165;31;0;3.6;1;0; B6,B12; phosphorus
+b_10; Broccoli; vegetable,broccoli,green;55;3.7;11;0.6;0.1;3.8; C,K; iron
+b_11; Carrot; vegetable,carrot;25;0.6;6;0.1;0;1.7; A,K; potassium
+b_12; Oatmeal; grain,oats,breakfast;150;5;27;3;0.5;4; B1,B5; manganese
+b_13;Candy;Candi, Kandy, Condy;500;25;12;392;1923;382;A, B, C, Z;None
+b_14;New Orange;Orange New, orange;1;2;3;4;5;6;N, A;Some
