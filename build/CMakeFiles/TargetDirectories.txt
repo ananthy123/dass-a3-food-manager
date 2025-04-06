@@ -1,0 +1,3 @@
+/Users/saiveekshithkotha/Desktop/Sem4/DASS/Assignment-3/dass-a3-food-manager/build/CMakeFiles/diet_manager.dir
+/Users/saiveekshithkotha/Desktop/Sem4/DASS/Assignment-3/dass-a3-food-manager/build/CMakeFiles/edit_cache.dir
+/Users/saiveekshithkotha/Desktop/Sem4/DASS/Assignment-3/dass-a3-food-manager/build/CMakeFiles/rebuild_cache.dir
