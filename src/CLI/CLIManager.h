@@ -20,6 +20,7 @@ private:
     void handleAddLogEntry();          // Log a food entry
     void handleViewLog();              // Display food log
     void handleViewProfile();          // Show profile info
+    void handleAddComponentToCompositeFood(); 
 
     // Helpers
     std::vector<std::string> getKeywordsInput();

@@ -29,7 +29,9 @@ public:
     double getFiber() const;
     std::string getVitamins() const;
     std::string getMinerals() const;
-
+    std::string getType() const override {
+        return "basic";
+    }
     void display() const override;
 };
 

@@ -10,6 +10,7 @@ protected:
     std::vector<std::string> keywords;
     public:
     std::string name;
+    virtual std::string getType() const = 0;
     Food(const std::string& id, const std::string& name, const std::vector<std::string>& keywords);
     // virtual ~Food();
     std::string getId() const;

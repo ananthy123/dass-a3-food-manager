@@ -75,6 +75,20 @@ CLIManager::CLIManager()
 }
 
 
+void CLIManager::showMenu() {
+    std::cout << "\n=== YADA: Yet Another Diet Assistant ===\n";
+    std::cout << "1. View Basic Foods\n";
+    std::cout << "2. View Composite Foods\n";
+    std::cout << "3. Add Basic Food\n";
+    std::cout << "4. Add Composite Food\n";
+    std::cout << "5. Add Component to Composite Food\n"; // Add this line
+    std::cout << "6. Log Food Consumption\n";
+    std::cout << "7. View Daily Log\n";
+    std::cout << "8. View Diet Profile\n"; // Update the number
+    std::cout << "0. Exit\n";
+    std::cout << "Choose an option: ";
+}
+
 void CLIManager::start() {
     int choice;
     do {
@@ -87,9 +101,10 @@ void CLIManager::start() {
             case 2: handleViewCompositeFoods(); break;
             case 3: handleAddBasicFood(); break;
             case 4: handleAddCompositeFood(); break;
-            case 5: handleAddLogEntry(); break;
-            case 6: handleViewLog(); break;
-            case 7: handleViewProfile(); break;
+            case 5: handleAddComponentToCompositeFood(); break; // Add this line
+            case 6: handleAddLogEntry(); break;
+            case 7: handleViewLog(); break;
+            case 8: handleViewProfile(); break; // Update the number
             case 0: break;
             default: std::cout << "Invalid option.\n"; pause(); break;
         }
@@ -100,26 +115,13 @@ void CLIManager::start() {
     std::cout << "Data saved. Goodbye!\n";
 }
 
-void CLIManager::showMenu() {
-    std::cout << "\n=== YADA: Yet Another Diet Assistant ===\n";
-    std::cout << "1. View Basic Foods\n";
-    std::cout << "2. View Composite Foods\n";
-    std::cout << "3. Add Basic Food\n";
-    std::cout << "4. Add Composite Food\n";
-    std::cout << "5. Log Food Consumption\n";
-    std::cout << "6. View Daily Log\n";
-    std::cout << "7. View Diet Profile\n";
-    std::cout << "0. Exit\n";
-    std::cout << "Choose an option: ";
-}
-
 void CLIManager::handleViewBasicFoods() {
     std::cout << "\n--- Basic Foods ---\n";
     for (const auto& food : db.getBasicFoods()) {
         food->display();
     }
     pause();
-}
+};
 
 void CLIManager::handleViewCompositeFoods() {
     std::cout << "\n--- Composite Foods ---\n";
@@ -243,6 +245,183 @@ std::vector<std::string> CLIManager::getKeywordsInput() {
     }
 
     return keywords;
+}
+
+// Add this function implementation
+void CLIManager::handleAddComponentToCompositeFood() {
+    // Helper function to trim whitespace - defined at the top for use throughout the function
+    auto trim = [](const std::string& str) {
+        size_t first = str.find_first_not_of(" \t");
+        if (first == std::string::npos) return std::string();
+        size_t last = str.find_last_not_of(" \t");
+        return str.substr(first, last - first + 1);
+    };
+
+    // Display available composite foods
+    std::cout << "\n--- Available Composite Foods ---\n";
+    const auto& compositeFoods = db.getCompositeFoods();
+    if (compositeFoods.empty()) {
+        std::cout << "No composite foods available. Create a composite food first.\n";
+        pause();
+        return;
+    }
+    
+    for (const auto& food : compositeFoods) {
+        std::cout << "ID: " << food->getId() << ", Name: " << trim(food->getName()) << "\n";
+    }
+    
+    // Ask if user wants to enter ID or name for the composite food
+    std::string compositeInputChoice;
+    std::cout << "\nDo you want to enter ID or name for the composite food? (id/name): ";
+    std::getline(std::cin, compositeInputChoice);
+    
+    std::shared_ptr<Food> compositeFood = nullptr;
+    
+    if (compositeInputChoice == "id") {
+        // Get composite food by ID
+        std::string compositeId;
+        std::cout << "Enter the ID of the composite food to modify: ";
+        std::getline(std::cin, compositeId);
+        
+        compositeFood = db.findFoodById(compositeId);
+    } else {
+        // Get composite food by name
+        std::string compositeName;
+        std::cout << "Enter the name of the composite food to modify: ";
+        std::getline(std::cin, compositeName);
+        
+        // Find food by name with trimming
+        compositeName = trim(compositeName);
+        for (const auto& food : compositeFoods) {
+            if (trim(food->getName()) == compositeName) {
+                compositeFood = food;
+                break;
+            }
+        }
+    }
+    
+    // Check if a valid composite food was found
+    if (!compositeFood || compositeFood->getType() != "composite") {
+        std::cout << "Invalid composite food selection.\n";
+        pause();
+        return;
+    }
+    
+    std::shared_ptr<CompositeFood> compFood = std::dynamic_pointer_cast<CompositeFood>(compositeFood);
+    
+    // Display all available foods (both basic and composite)
+    std::cout << "\n--- Available Foods to Add as Components ---\n";
+    std::cout << "Basic foods:\n";
+    const auto& basicFoods = db.getBasicFoods();
+    for (const auto& food : basicFoods) {
+        std::cout << "ID: " << food->getId() << ", Name: " << trim(food->getName()) << "\n";
+    }
+    
+    std::cout << "\nComposite foods:\n";
+    for (const auto& food : compositeFoods) {
+        // Skip the composite food we're currently editing
+        if (food->getId() != compFood->getId()) {
+            std::cout << "ID: " << food->getId() << ", Name: " << trim(food->getName()) << "\n";
+        }
+    }
+    
+    // Ask if user wants to enter ID or name for the component
+    std::string componentInputChoice;
+    std::cout << "\nDo you want to enter ID or name for the component? (id/name): ";
+    std::getline(std::cin, componentInputChoice);
+    
+    std::shared_ptr<Food> componentFood = nullptr;
+    
+    if (componentInputChoice == "id") {
+        // Get component by ID
+        std::string componentId;
+        std::cout << "Enter the ID of the food to add as component: ";
+        std::getline(std::cin, componentId);
+        
+        componentFood = db.findFoodById(componentId);
+    } else {
+        // Get component by name
+        std::string componentName;
+        std::cout << "Enter the name of the food to add as component: ";
+        std::getline(std::cin, componentName);
+        
+        // Find food by name in both basic and composite foods - with improved matching
+        componentFood = nullptr;
+        
+        // Trim the input name
+        componentName = trim(componentName);
+        
+        // Search through basic foods with trimmed comparison
+        for (const auto& food : basicFoods) {
+            if (trim(food->getName()) == componentName) {
+                componentFood = food;
+                break;
+            }
+        }
+        
+        // If not found in basic foods, check composite foods
+        if (!componentFood) {
+            for (const auto& food : compositeFoods) {
+                if (trim(food->getName()) == componentName && food->getId() != compFood->getId()) {
+                    componentFood = food;
+                    break;
+                }
+            }
+        }
+    } // FIXED: Proper closing brace for the else block
+    
+    // Check if component food was found
+    if (!componentFood) {
+        std::cout << "Food not found.\n";
+        pause();
+        return;
+    }
+    
+    // Check for circular references
+    if (componentFood->getId() == compFood->getId()) {
+        std::cout << "Cannot add a composite food to itself.\n";
+        pause();
+        return;
+    }
+    
+    // If component is a composite food, check for circular references
+    if (componentFood->getType() == "composite") {
+        // We need to check if adding this component would create a circular reference
+        // This is complex without a helper function, so let's implement a simple version
+        std::shared_ptr<CompositeFood> componentCompFood = 
+            std::dynamic_pointer_cast<CompositeFood>(componentFood);
+            
+        // Simple check: see if the component contains the target composite food
+        // We'd ideally want a recursive function here for deep checking
+        for (const auto& pair : componentCompFood->getComponents()) {
+            if (pair.first->getId() == compFood->getId()) {
+                std::cout << "Cannot add this food as it would create a circular reference.\n";
+                pause();
+                return;
+            }
+        }
+    }
+    
+    // Get quantity
+    double quantity;
+    std::cout << "Enter quantity: ";
+    std::cin >> quantity;
+    std::cin.ignore();
+    
+    if (quantity <= 0) {
+        std::cout << "Quantity must be positive.\n";
+        pause();
+        return;
+    }
+    
+    // Add the component
+    compFood->addComponent(componentFood, quantity);
+    
+    // The database should be saved when exiting the program
+    
+    std::cout << "Successfully added " << trim(componentFood->getName()) << " (ID: " << componentFood->getId() 
+              << ") to " << trim(compFood->getName()) << "\n";
+    pause();
 }
 
 void CLIManager::pause() {

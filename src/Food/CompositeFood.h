@@ -18,6 +18,9 @@ public:
     void display() const override;
     // Expose components for saving
     const std::vector<std::pair<std::shared_ptr<Food>, double>>& getComponents() const;
+    std::string getType() const override {
+        return "composite";
+    }
 };
 
 #endif // COMPOSITE_FOOD_H
