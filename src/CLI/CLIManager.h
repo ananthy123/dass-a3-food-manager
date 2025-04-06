@@ -10,6 +10,7 @@ private:
     FoodDatabase db;
     DailyLog log;
     DietProfile profile;
+    bool autoSaveEnabled;
 
     // Menu + handlers
     void showMenu();
@@ -21,10 +22,13 @@ private:
     void handleViewLog();              // Display food log
     void handleViewProfile();          // Show profile info
     void handleAddComponentToCompositeFood(); 
-
+    void handleSaveDatabase();
+    
     // Helpers
     std::vector<std::string> getKeywordsInput();
     void pause();
+    void promptSavePreference();       // Add this line for the new function
+    void saveIfAutoSave();  
 
 public:
     CLIManager();

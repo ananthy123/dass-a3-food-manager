@@ -60,7 +60,8 @@ bool validateBasicFoodsFile(const std::string& filename) {
 CLIManager::CLIManager()
     : db(BASIC_FOODS_FILE, COMPOSITE_FOODS_FILE),
       log(DAILY_LOG_FILE),
-      profile("Ananth", "male", 180, 25, 75, 1.55) {
+      profile("Ananth", "male", 180, 25, 75, 1.55),
+      autoSaveEnabled(false) { // Initialize to false by default
 
     // Validate file before loading
     if (!validateBasicFoodsFile(BASIC_FOODS_FILE)) {
@@ -69,11 +70,11 @@ CLIManager::CLIManager()
     }
     
     db.loadDatabase(); // ✅ only called if validation passed
-    
-
     log.loadLog();
+    
+    // Prompt for save preference
+    // promptSavePreference();
 }
-
 
 void CLIManager::showMenu() {
     std::cout << "\n=== YADA: Yet Another Diet Assistant ===\n";
@@ -85,6 +86,7 @@ void CLIManager::showMenu() {
     std::cout << "6. Log Food Consumption\n";
     std::cout << "7. View Daily Log\n";
     std::cout << "8. View Diet Profile\n"; // Update the number
+    std::cout << "9. Save Database\n";
     std::cout << "0. Exit\n";
     std::cout << "Choose an option: ";
 }
@@ -105,6 +107,7 @@ void CLIManager::start() {
             case 6: handleAddLogEntry(); break;
             case 7: handleViewLog(); break;
             case 8: handleViewProfile(); break; // Update the number
+            case 9: handleSaveDatabase(); break;
             case 0: break;
             default: std::cout << "Invalid option.\n"; pause(); break;
         }
@@ -162,6 +165,10 @@ void CLIManager::handleAddBasicFood() {
     db.addBasicFood(food);
 
     std::cout << "Basic food added with ID: " << id << "\n";
+    
+    // Add this line to save based on preference
+    saveIfAutoSave();
+    
     pause();
 }
 
@@ -197,6 +204,10 @@ void CLIManager::handleAddCompositeFood() {
 
     db.addCompositeFood(comp);
     std::cout << "Composite food added with ID: " << id << "\n";
+    
+    // Add this line to save based on preference
+    saveIfAutoSave();
+    
     pause();
 }
 
@@ -215,6 +226,12 @@ void CLIManager::handleAddLogEntry() {
     if (db.findFoodById(id)) {
         log.addEntry({date, id, servings});
         std::cout << "Log entry added.\n";
+        
+        // Also save the log if auto-save is enabled
+        if (autoSaveEnabled) {
+            log.saveLog();
+            std::cout << "Log changes saved.\n";
+        }
     } else {
         std::cout << "Food not found.\n";
     }
@@ -419,6 +436,8 @@ void CLIManager::handleAddComponentToCompositeFood() {
     
     // The database should be saved when exiting the program
     
+    saveIfAutoSave(); // Save if auto-save is enabled
+
     std::cout << "Successfully added " << trim(componentFood->getName()) << " (ID: " << componentFood->getId() 
               << ") to " << trim(compFood->getName()) << "\n";
     pause();
@@ -427,4 +446,34 @@ void CLIManager::handleAddComponentToCompositeFood() {
 void CLIManager::pause() {
     std::cout << "Press ENTER to continue...";
     std::cin.get();
+}
+
+void CLIManager::promptSavePreference() {
+    char choice;
+    std::cout << "\n=== Database Save Preference ===\n";
+    std::cout << "Would you like to save changes immediately after each modification? (y/n): ";
+    std::cin >> choice;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
+    autoSaveEnabled = (choice == 'y' || choice == 'Y');
+    
+    if (autoSaveEnabled) {
+        std::cout << "Auto-save enabled. Changes will be saved immediately.\n";
+    } else {
+        std::cout << "Auto-save disabled. Changes will be saved when the program exits.\n";
+    }
+}
+
+void CLIManager::saveIfAutoSave() {
+    if (autoSaveEnabled) {
+        db.saveDatabase();
+        std::cout << "Database changes saved.\n";
+    }
+}
+
+void CLIManager::handleSaveDatabase() {
+    db.saveDatabase();
+    log.saveLog();
+    std::cout << "Database and log successfully saved.\n";
+    pause();
 }
