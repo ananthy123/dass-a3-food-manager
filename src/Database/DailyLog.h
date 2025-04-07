@@ -27,6 +27,9 @@ public:
     void undoLastAction(); // Undo the last action
     std::vector<LogEntry> getEntriesByDate(const std::string& date) const; // Get entries for a specific date
     void updateEntry(int index, const LogEntry& newEntry); // Update an entry
+    
+    // New method to return all entries
+    const std::vector<LogEntry>& getEntries() const { return entries; }
 };
 
 #endif // DAILY_LOG_H

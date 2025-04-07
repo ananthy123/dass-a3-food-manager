@@ -351,7 +351,23 @@ void CLIManager::handleAddLogEntry() {
 
 void CLIManager::handleViewLog() {
     std::cout << "\n--- Daily Log ---\n";
-    log.displayLog();
+    const auto& entries = log.getEntries();
+    for (const auto& entry : entries) {
+        // Remove any spaces from the id at the start and end
+        std::string trimmedId = entry.foodId;
+        trimmedId.erase(trimmedId.find_last_not_of(" \n\r\t") + 1);
+        trimmedId.erase(0, trimmedId.find_first_not_of(" \n\r\t"));
+
+        cout << "Food ID: " << trimmedId << endl;
+        auto food = db.findFoodById(trimmedId);
+        std::string foodName = food ? food->getName() : "Unknown Food";
+        std::string foodType = food ? food->getType() : "unknown";
+        
+        std::cout << "Date: " << entry.date 
+                  << ", Food: " << foodName
+                  << " (" << foodType << ", ID: " << entry.foodId << ")"
+                  << ", Servings: " << entry.servings << std::endl;
+    }
     pause();
 }
 
@@ -359,17 +375,31 @@ void CLIManager::handleViewLogByDate() {
     std::cout << "Enter date (YYYY-MM-DD): ";
     std::string date;
     std::cin >> date;
+    std::cin.ignore();
 
     auto entries = log.getEntriesByDate(date);
     if (entries.empty()) {
         std::cout << "No entries for this date.\n";
+        pause();
         return;
     }
 
+    std::cout << "\n=== Log Entries for " << date << " ===\n";
     for (size_t i = 0; i < entries.size(); ++i) {
-        std::cout << i + 1 << ". Food ID: " << entries[i].foodId
+        // Remove any spaces from the id at the start and end
+        std::string trimmedId = entries[i].foodId;
+        trimmedId.erase(trimmedId.find_last_not_of(" \n\r\t") + 1);
+        trimmedId.erase(0, trimmedId.find_first_not_of(" \n\r\t"));
+
+        auto food = db.findFoodById(trimmedId);
+        std::string foodName = food ? food->getName() : "Unknown Food";
+        std::string foodType = food ? food->getType() : "unknown";
+        
+        std::cout << i + 1 << ". Food: " << foodName
+                  << " (" << foodType << ", ID: " << entries[i].foodId << ")"
                   << ", Servings: " << entries[i].servings << "\n";
     }
+    pause();
 }
 
 void CLIManager::handleUndo() {
