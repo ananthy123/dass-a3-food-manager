@@ -3,12 +3,16 @@
 
 #include <string>
 #include <memory>
+#include <map>
+#include <functional>
 #include "CalorieCalculationStrategy.h"
+
+using namespace std;
 
 class DietProfile {
 private:
-    std::string name;
-    std::string gender;
+    string name;
+    string gender;
     double height; // in centimeters
     int age;
     double weight; // in kilograms
@@ -16,10 +20,17 @@ private:
     int method; // method to calculate target calories
     
     // Strategy object
-    std::unique_ptr<CalorieCalculationStrategy> calorieStrategy;
+    unique_ptr<CalorieCalculationStrategy> calorieStrategy;
+    
+    // Store a map of methods to their respective strategy classes
+    // For example: 1 for Mifflin-St Jeor, 2 for Harris-Benedict, etc.
+    static map<int, function<unique_ptr<CalorieCalculationStrategy>()>> strategyFactories;
+    
+    // Initialize the strategy factories map
+    static void initializeStrategyFactories();
 
 public:
-    DietProfile(const std::string& name, const std::string& gender, double height, int age, double weight, double activityLevel, int method = 1);
+    DietProfile(const string& name, const string& gender, double height, int age, double weight, double activityLevel, int method = 1);
     
     // Method to set the calculation strategy
     void setCalculationMethod(int methodId);
@@ -29,6 +40,12 @@ public:
     
     // Display profile information
     void displayProfile() const;
+    
+    // Add new calculation method to the available methods
+    static void registerCalculationMethod(int methodId, function<unique_ptr<CalorieCalculationStrategy>()> factory);
+    
+    // Get all available calculation methods
+    static std::map<int, std::string> getAvailableCalculationMethods();
 };
 
 #endif // DIET_PROFILE_H

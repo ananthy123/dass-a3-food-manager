@@ -108,7 +108,8 @@ void CLIManager::showLogMenu() {
 void CLIManager::showProfileMenu() {
     std::cout << "\n=== Diet Profile ===\n";
     std::cout << "1. View Diet Profile\n";
-    std::cout << "2. Back to Main Menu\n";
+    std::cout << "2. Change Calorie Calculation Method\n";
+    std::cout << "3. Back to Main Menu\n";
     std::cout << "Choose an option: ";
 }
 
@@ -184,10 +185,11 @@ void CLIManager::start() {
                     
                     switch (profileChoice) {
                         case 1: handleViewProfile(); break;
-                        case 2: break; // Back to main menu
+                        case 2: handleCalorieMethodChange(); break;
+                        case 3: break; // Back to main menu
                         default: std::cout << "Invalid option.\n"; pause(); break;
                     }
-                } while (profileChoice != 2);
+                } while (profileChoice != 3);
                 break;
             }
             
@@ -587,5 +589,34 @@ void CLIManager::handleSaveDatabase() {
     db.saveDatabase();
     log.saveLog();
     std::cout << "Database and log successfully saved.\n";
+    pause();
+}
+
+void CLIManager::handleCalorieMethodChange() {
+    std::cout << "\n=== Calorie Calculation Methods ===\n";
+    
+    // Get all available methods from the DietProfile class
+    auto availableMethods = DietProfile::getAvailableCalculationMethods();
+    
+    // Display all available methods
+    for (const auto& method : availableMethods) {
+        std::cout << method.first << ". " << method.second << "\n";
+    }
+    
+    // Ask the user to select a method by ID
+    std::cout << "\nSelect method ID: ";
+    
+    int methodChoice;
+    std::cin >> methodChoice;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
+    // Check if the chosen method exists in the available methods
+    if (availableMethods.find(methodChoice) != availableMethods.end()) {
+        profile.setCalculationMethod(methodChoice);
+        std::cout << "Calorie calculation method changed to " 
+                  << availableMethods[methodChoice] << ".\n";
+    } else {
+        std::cout << "Invalid method ID. No changes made.\n";
+    }
     pause();
 }

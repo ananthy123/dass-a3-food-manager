@@ -31,6 +31,7 @@ private:
     
     // Profile menu handlers
     void handleViewProfile();
+    void handleCalorieMethodChange();
     
     // Database handlers
     void handleSaveDatabase();
