@@ -850,8 +850,31 @@ void CLIManager::handleCalorieSummary() {
     std::cout << "Your target calorie intake is: " << targetCalories << " kcal\n";
 
     // Get the log entries for the specified date.
+    auto entries = log.getEntriesByDate(date);
+
+    if (entries.empty()) {
+        std::cout << "No log entries found for this date.\n";
+        pause();
+        return;
+    }
+
+    // Calculate the total calories consumed on that day
+    int totalCalories = 0;
+    for (const auto& entry : entries) {
+        std::string trimmedId = entry.foodId;
+        trimmedId.erase(trimmedId.find_last_not_of(" \n\r\t") + 1);
+        trimmedId.erase(0, trimmedId.find_first_not_of(" \n\r\t"));
+
+        // Find the food item in the database
+        auto food = db.findFoodById(trimmedId);
+        if (food) {
+            totalCalories += food->getCalories() * entry.servings;
+        }
+    }
+
+    std::cout << "Total calories consumed on " << date << ": " << totalCalories << " kcal\n";
 
 
-
+    std::cout << "Calorie Summary:" << totalCalories - targetCalories << "\n" ;
     pause();
 }
