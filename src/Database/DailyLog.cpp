@@ -41,6 +41,17 @@ void DailyLog::saveLog() const {
 }
 
 void DailyLog::addEntry(const LogEntry& entry) {
+    // Check if an entry with the same date and food ID already exists
+    for (auto& existingEntry : entries) {
+        if (existingEntry.date == entry.date && existingEntry.foodId == entry.foodId) {
+            // Combine the servings
+            undoStack.push(entries); // Save current state for undo
+            existingEntry.servings += entry.servings;
+            return;
+        }
+    }
+
+    // If no matching entry is found, add a new entry
     undoStack.push(entries); // Save current state for undo
     entries.push_back(entry);
 }

@@ -365,7 +365,7 @@ void CLIManager::handleViewLog() {
         
         std::cout << "Date: " << entry.date 
                   << ", Food: " << foodName
-                  << " (" << foodType << ", ID: " << entry.foodId << ")"
+                  << " (" << foodType << ")"
                   << ", Servings: " << entry.servings << std::endl;
     }
     pause();
