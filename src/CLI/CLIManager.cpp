@@ -297,35 +297,28 @@ void CLIManager::handleAddCompositeFood() {
 }
 
 void CLIManager::handleAddLogEntry() {
-    std::string date, id;
+    std::string date;
     double servings;
 
     std::cout << "Enter date (YYYY-MM-DD): ";
     std::getline(std::cin, date);
-    std::cout << "Enter food ID: ";
-    std::getline(std::cin, id);
-    std::cout << "Servings: ";
-    std::cin >> servings;
+
+    std::cout << "Enter comma-separated keywords: " << std::endl;
+    // Default to searching foods by keywords
+    auto keywords = getKeywordsInput();
+    std::cout << "Match (1) all or (2) any keywords? ";
+    int matchType;
+    std::cin >> matchType;
     std::cin.ignore();
 
-    std::cout << "Search foods by keywords? (y/n): ";
-    char searchChoice;
-    std::cin >> searchChoice;
-    std::cin.ignore();
+    std::vector<std::shared_ptr<Food>> searchResults = db.searchFoodsByKeywords(keywords, matchType == 1);
 
-    std::vector<std::shared_ptr<Food>> searchResults;
-    if (searchChoice == 'y' || searchChoice == 'Y') {
-        auto keywords = getKeywordsInput();
-        std::cout << "Match (1) all or (2) any keywords? ";
-        int matchType;
-        std::cin >> matchType;
-        std::cin.ignore();
-
-        searchResults = db.searchFoodsByKeywords(keywords, matchType == 1);
-    } else {
-        searchResults = db.getAllFoods();
+    if (searchResults.empty()) {
+        std::cout << "No foods found matching the criteria.\n";
+        return;
     }
 
+    std::cout << "\nSearch Results:\n";
     for (size_t i = 0; i < searchResults.size(); ++i) {
         std::cout << i + 1 << ". " << searchResults[i]->getName() << "\n";
     }
@@ -342,17 +335,16 @@ void CLIManager::handleAddLogEntry() {
 
     auto selectedFood = searchResults[foodIndex - 1];
 
-    if (db.findFoodById(id)) {
-        log.addEntry({date, id, servings});
-        std::cout << "Log entry added.\n";
-        
-        // Also save the log if auto-save is enabled
-        if (autoSaveEnabled) {
-            log.saveLog();
-            std::cout << "Log changes saved.\n";
-        }
-    } else {
-        std::cout << "Food not found.\n";
+    std::cout << "Enter servings: ";
+    std::cin >> servings;
+    std::cin.ignore();
+
+    log.addEntry({date, selectedFood->getId(), servings});
+    std::cout << "Log entry added for food: " << selectedFood->getName() << "\n";
+
+    if (autoSaveEnabled) {
+        log.saveLog();
+        std::cout << "Log changes saved.\n";
     }
     pause();
 }
