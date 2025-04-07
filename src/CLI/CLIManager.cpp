@@ -115,7 +115,8 @@ void CLIManager::showProfileMenu() {
     std::cout << "1. View Diet Profile\n";
     std::cout << "2. Edit Diet Profile\n";
     std::cout << "3. Change Calorie Calculation Method\n";
-    std::cout << "4. Back to Main Menu\n";
+    std::cout << "4. View Calorie Summary\n";
+    std::cout << "5. Back to Main Menu\n";
     std::cout << "Choose an option: ";
 }
 
@@ -178,10 +179,11 @@ void CLIManager::start() {
                         case 1: handleViewProfile(); break;
                         case 2: handleEditProfile(); break;
                         case 3: handleCalorieMethodChange(); break;
-                        case 4: break; // Back to main menu
+                        case 4: handleCalorieSummary(); break; 
+                        case 5: break; // Back to main menu
                         default: std::cout << "Invalid option.\n"; pause(); break;
                     }
-                } while (profileChoice != 4);
+                } while (profileChoice != 5);
                 break;
             }
             
@@ -588,4 +590,31 @@ void CLIManager::handleCalorieMethodChange() {
 
 void CLIManager::handleEditProfile() {
     profile.editProfile();
+}
+
+void CLIManager::handleCalorieSummary() {
+    // Ask the date for which the user wants to see the calorie summary
+    std::string date;
+    std::cout << "Enter date (YYYY-MM-DD) for calorie summary: ";
+    std::getline(std::cin, date);
+    // Check if the date is valid
+    if (date.empty()) {
+        std::cout << "Selecting today's date.\n";
+        time_t now = time(0);
+        struct tm* timeinfo = localtime(&now);
+        char buffer[80];
+        strftime(buffer, sizeof(buffer), "%Y-%m-%d", timeinfo);
+        date = buffer;
+        cout << date << endl ;
+    }
+
+    // Getting the target Calories from the profile
+    double targetCalories = profile.calculateTargetIntakeCalories();
+    std::cout << "Your target calorie intake is: " << targetCalories << " kcal\n";
+
+    // Get the log entries for the specified date.
+    
+
+
+    pause();
 }
