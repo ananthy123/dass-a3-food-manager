@@ -217,3 +217,37 @@ std::string FoodDatabase::generateBasicFoodId() {
 std::string FoodDatabase::generateCompositeFoodId() {
     return "c_" + std::to_string(++compositeIdCounter);
 }
+
+std::vector<std::shared_ptr<Food>> FoodDatabase::searchFoodsByKeywords(const std::vector<std::string>& keywords, bool matchAll) const {
+    std::vector<std::shared_ptr<Food>> results;
+
+    auto matches = [&](const std::shared_ptr<Food>& food) {
+        const auto& foodKeywords = food->getKeywords();
+        int matchCount = 0;
+
+        for (const auto& keyword : keywords) {
+            if (std::find(foodKeywords.begin(), foodKeywords.end(), keyword) != foodKeywords.end()) {
+                ++matchCount;
+            }
+        }
+
+        return matchAll ? (matchCount == keywords.size()) : (matchCount > 0);
+    };
+
+    for (const auto& food : basicFoods) {
+        if (matches(food)) results.push_back(food);
+    }
+
+    for (const auto& food : compositeFoods) {
+        if (matches(food)) results.push_back(food);
+    }
+
+    return results;
+}
+
+std::vector<std::shared_ptr<Food>> FoodDatabase::getAllFoods() const {
+    std::vector<std::shared_ptr<Food>> allFoods;
+    allFoods.insert(allFoods.end(), basicFoods.begin(), basicFoods.end());
+    allFoods.insert(allFoods.end(), compositeFoods.begin(), compositeFoods.end());
+    return allFoods;
+}

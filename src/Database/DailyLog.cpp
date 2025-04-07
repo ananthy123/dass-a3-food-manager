@@ -41,12 +41,16 @@ void DailyLog::saveLog() const {
 }
 
 void DailyLog::addEntry(const LogEntry& entry) {
+    undoStack.push(entries); // Save current state for undo
     entries.push_back(entry);
 }
 
 void DailyLog::removeEntry(int index) {
     if (index >= 0 && index < entries.size()) {
+        undoStack.push(entries); // Save current state for undo
         entries.erase(entries.begin() + index);
+    } else {
+        std::cerr << "Invalid entry index.\n";
     }
 }
 
@@ -55,5 +59,33 @@ void DailyLog::displayLog() const {
         std::cout << "Date: " << entry.date 
                   << ", Food ID: " << entry.foodId 
                   << ", Servings: " << entry.servings << std::endl;
+    }
+}
+
+void DailyLog::undoLastAction() {
+    if (!undoStack.empty()) {
+        entries = undoStack.top();
+        undoStack.pop();
+    } else {
+        std::cerr << "No actions to undo.\n";
+    }
+}
+
+std::vector<LogEntry> DailyLog::getEntriesByDate(const std::string& date) const {
+    std::vector<LogEntry> result;
+    for (const auto& entry : entries) {
+        if (entry.date == date) {
+            result.push_back(entry);
+        }
+    }
+    return result;
+}
+
+void DailyLog::updateEntry(int index, const LogEntry& newEntry) {
+    if (index >= 0 && index < entries.size()) {
+        undoStack.push(entries); // Save current state for undo
+        entries[index] = newEntry;
+    } else {
+        std::cerr << "Invalid entry index.\n";
     }
 }

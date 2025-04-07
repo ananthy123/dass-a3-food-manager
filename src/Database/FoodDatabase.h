@@ -34,6 +34,11 @@ public:
     // 🔁 ID Generation
     std::string generateBasicFoodId();     // returns "b_1", "b_2", etc.
     std::string generateCompositeFoodId(); // returns "c_1", "c_2", etc.
+
+    // 🔍 Search
+    std::vector<std::shared_ptr<Food>> searchFoodsByKeywords(const std::vector<std::string>& keywords, bool matchAll) const;
+
+    std::vector<std::shared_ptr<Food>> getAllFoods() const; // Return all foods
 };
 
 

@@ -28,6 +28,8 @@ private:
     // Log menu handlers
     void handleAddLogEntry();
     void handleViewLog();
+    void handleViewLogByDate();
+    void handleUndo();
     
     // Profile menu handlers
     void handleViewProfile();

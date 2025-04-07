@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <stack> // For undo functionality
 
 // Simple structure for a log entry
 struct LogEntry {
@@ -15,6 +16,7 @@ class DailyLog {
 private:
     std::vector<LogEntry> entries;
     std::string logFile;
+    std::stack<std::vector<LogEntry>> undoStack; // Stack to store undo states
 public:
     DailyLog(const std::string& file);
     void loadLog();
@@ -22,6 +24,9 @@ public:
     void addEntry(const LogEntry& entry);
     void removeEntry(int index);
     void displayLog() const;
+    void undoLastAction(); // Undo the last action
+    std::vector<LogEntry> getEntriesByDate(const std::string& date) const; // Get entries for a specific date
+    void updateEntry(int index, const LogEntry& newEntry); // Update an entry
 };
 
 #endif // DAILY_LOG_H
