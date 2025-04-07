@@ -50,7 +50,7 @@ bool validateBasicFoodsFile(const std::string& filename) {
     }
 
     if (!hasError) {
-        std::cout << "✅ basic_foods.txt passed validation.\n";
+        // std::cout << "✅ basic_foods.txt passed validation.\n";
     } else {
         std::cerr << "⚠️ Validation errors found. Please fix them before continuing.\n";
     }
@@ -98,7 +98,7 @@ void CLIManager::showFoodMenu() {
     std::cout << "2. View Composite Foods\n";
     std::cout << "3. Add Basic Food\n";
     std::cout << "4. Add Composite Food\n";
-    std::cout << "5. Edit Composite Food\n";
+    std::cout << "5. Add Component to Composite Food\n";
     std::cout << "6. Back to Main Menu\n";
     std::cout << "Choose an option: ";
 }
@@ -265,6 +265,7 @@ void CLIManager::handleAddCompositeFood() {
     std::cout << "Enter composite food name: ";
     std::getline(std::cin, name);
 
+    cout << "Enter comma-separated keywords: " << std::endl;
     auto keywords = getKeywordsInput();
     std::string id = db.generateCompositeFoodId();
 
