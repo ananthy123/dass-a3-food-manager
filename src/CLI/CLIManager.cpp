@@ -59,7 +59,7 @@ bool validateBasicFoodsFile(const std::string& filename) {
 }
 
 CLIManager::CLIManager()
-    : db(BASIC_FOODS_FILE, COMPOSITE_FOODS_FILE),
+    : db(COMPOSITE_FOODS_FILE),
       log(DAILY_LOG_FILE),
       profile("", "", 0, 0, 0, 0),
       autoSaveEnabled(false) { // Initialize with dummy values
@@ -69,6 +69,10 @@ CLIManager::CLIManager()
         std::cerr << "🚫 Invalid format in basic_foods.txt. Fix it and rerun.\n";
         exit(1);
     }
+
+    // Add the default text file food source
+    auto textFileSource = std::make_shared<TextFileFoodSource>(BASIC_FOODS_FILE);
+    db.addFoodSource(textFileSource);
 
     db.loadDatabase();
     log.loadLog();

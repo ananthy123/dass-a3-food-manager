@@ -4,6 +4,7 @@
 #include "../Database/FoodDatabase.h"
 #include "../Database/DailyLog.h"
 #include "../User/DietProfile.h"
+#include "../Database/TextFileFoodSource.h"
 
 class CLIManager {
 private:
@@ -31,7 +32,6 @@ private:
     void handleViewLogByDate();
     void handleUndo();
     void handleDeleteLogEntry(); // Handler for deleting log entries
-    // bool wouldCreateCircularReference(std::shared_ptr<CompositeFood> parent, std::shared_ptr<Food> child);
     
     // Profile menu handlers
     void handleViewProfile();
