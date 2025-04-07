@@ -181,7 +181,7 @@ void CLIManager::start() {
                         case 4: break; // Back to main menu
                         default: std::cout << "Invalid option.\n"; pause(); break;
                     }
-                } while (profileChoice != 3);
+                } while (profileChoice != 4);
                 break;
             }
             

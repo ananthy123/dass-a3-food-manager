@@ -52,7 +52,7 @@ void DietProfile::setCalculationMethod(int methodId) {
     }
 }
 
-double DietProfile::calculateTargetCalories() const {
+double DietProfile::calculateTargetIntakeCalories() const {
     // Use the strategy to calculate BMR
     double bmr = calorieStrategy->calculateBMR(gender, weight, height, age);
     
@@ -75,7 +75,7 @@ void DietProfile::displayProfile() const {
     // Get method name directly from the strategy object
     std::string methodName = calorieStrategy ? calorieStrategy->getName() : "Unknown";
     std::cout << "Method: " << methodName << "\n";
-    std::cout << "Target Calories: " << calculateTargetCalories() << " kcal\n";
+    std::cout << "Target Calories Intake: " << calculateTargetIntakeCalories() << " kcal\n";
 
     std::cout << "---------------------------------\n";
 }

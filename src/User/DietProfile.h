@@ -35,8 +35,8 @@ public:
     // Method to set the calculation strategy
     void setCalculationMethod(int methodId);
     
-    // Calculate target calories using the strategy
-    double calculateTargetCalories() const;
+    // Calculate target calories using the strategy, and returns the target intake calories {based on the selected method}
+    double calculateTargetIntakeCalories() const;
     
     // Display profile information
     void displayProfile() const;
