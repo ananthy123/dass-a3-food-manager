@@ -30,6 +30,7 @@ private:
     void handleViewLog();
     void handleViewLogByDate();
     void handleUndo();
+    void handleDeleteLogEntry(); // Handler for deleting log entries
     // bool wouldCreateCircularReference(std::shared_ptr<CompositeFood> parent, std::shared_ptr<Food> child);
     
     // Profile menu handlers

@@ -100,3 +100,21 @@ void DailyLog::updateEntry(int index, const LogEntry& newEntry) {
         std::cerr << "Invalid entry index.\n";
     }
 }
+
+void DailyLog::removeEntryByDateAndId(const std::string& date, const std::string& foodId) {
+    undoStack.push(entries); // Save current state for undo
+    
+    auto it = entries.begin();
+    while (it != entries.end()) {
+        if (it->date == date && it->foodId == foodId) {
+            it = entries.erase(it);
+            return; // Remove only the first matching entry
+        } else {
+            ++it;
+        }
+    }
+    
+    // If we get here, no matching entry was found
+    std::cerr << "No entry found with date " << date << " and food ID " << foodId << std::endl;
+    undoStack.pop(); // Remove the unnecessary saved state
+}

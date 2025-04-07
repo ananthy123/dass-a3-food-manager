@@ -23,6 +23,7 @@ public:
     void saveLog() const;
     void addEntry(const LogEntry& entry);
     void removeEntry(int index);
+    void removeEntryByDateAndId(const std::string& date, const std::string& foodId); // New method to remove entry by date and foodId
     void displayLog() const;
     void undoLastAction(); // Undo the last action
     std::vector<LogEntry> getEntriesByDate(const std::string& date) const; // Get entries for a specific date

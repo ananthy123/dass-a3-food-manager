@@ -108,8 +108,9 @@ void CLIManager::showLogMenu() {
     std::cout << "1. Log Food Consumption\n";
     std::cout << "2. View Daily Log\n";
     std::cout << "3. View Log by Date\n"; 
-    std::cout << "4. Undo Last Action\n"; 
-    std::cout << "5. Back to Main Menu\n";
+    std::cout << "4. Delete Log Entry\n";
+    std::cout << "5. Undo Last Action\n"; 
+    std::cout << "6. Back to Main Menu\n";
     std::cout << "Choose an option: ";
 }
 
@@ -164,11 +165,12 @@ void CLIManager::start() {
                         case 1: handleAddLogEntry(); break;
                         case 2: handleViewLog(); break;
                         case 3: handleViewLogByDate(); break; // Handle viewing log by date
-                        case 4: handleUndo(); break; // Handle undoing last action
-                        case 5: break; // Back to main menu
+                        case 4: handleDeleteLogEntry(); break; // Handle deleting log entry
+                        case 5: handleUndo(); break; // Handle undoing last action
+                        case 6: break; // Back to main menu
                         default: std::cout << "Invalid option.\n"; pause(); break;
                     }
-                } while (logChoice != 5);
+                } while (logChoice != 6);
                 break;
             }
             
@@ -399,6 +401,126 @@ void CLIManager::handleViewLogByDate() {
                   << " (" << foodType << ", ID: " << entries[i].foodId << ")"
                   << ", Servings: " << entries[i].servings << "\n";
     }
+    
+    // Offer option to update a log entry
+    std::cout << "\nWould you like to update a log entry? (y/n): ";
+    char updateChoice;
+    std::cin >> updateChoice;
+    std::cin.ignore();
+    
+    if (updateChoice == 'y' || updateChoice == 'Y') {
+        std::cout << "Enter the number of the entry you want to update: ";
+        int entryNumber;
+        std::cin >> entryNumber;
+        std::cin.ignore();
+        
+        if (entryNumber < 1 || entryNumber > entries.size()) {
+            std::cout << "Invalid entry number.\n";
+        } else {
+            int index = entryNumber - 1;
+            LogEntry selectedEntry = entries[index];
+            
+            std::cout << "Current servings: " << selectedEntry.servings << "\n";
+            std::cout << "Enter new servings: ";
+            double newServings;
+            std::cin >> newServings;
+            std::cin.ignore();
+            
+            if (newServings <= 0) {
+                std::cout << "Servings must be positive. Update canceled.\n";
+            } else {
+                // Remove the old entry and add a new one with updated servings
+                log.removeEntryByDateAndId(selectedEntry.date, selectedEntry.foodId);
+                
+                // Create and add the updated entry
+                LogEntry updatedEntry = {
+                    selectedEntry.date, 
+                    selectedEntry.foodId, 
+                    newServings
+                };
+                log.addEntry(updatedEntry);
+                
+                std::cout << "Log entry updated successfully.\n";
+                
+                // Save if auto-save is enabled
+                if (autoSaveEnabled) {
+                    log.saveLog();
+                    std::cout << "Log changes saved.\n";
+                }
+            }
+        }
+    }
+    
+    pause();
+}
+
+void CLIManager::handleDeleteLogEntry() {
+    std::cout << "Enter date (YYYY-MM-DD): ";
+    std::string date;
+    std::cin >> date;
+    std::cin.ignore();
+
+    auto entries = log.getEntriesByDate(date);
+    if (entries.empty()) {
+        std::cout << "No entries for this date.\n";
+        pause();
+        return;
+    }
+
+    std::cout << "\n=== Log Entries for " << date << " ===\n";
+    for (size_t i = 0; i < entries.size(); ++i) {
+        // Remove any spaces from the id at the start and end
+        std::string trimmedId = entries[i].foodId;
+        trimmedId.erase(trimmedId.find_last_not_of(" \n\r\t") + 1);
+        trimmedId.erase(0, trimmedId.find_first_not_of(" \n\r\t"));
+
+        auto food = db.findFoodById(trimmedId);
+        std::string foodName = food ? food->getName() : "Unknown Food";
+        std::string foodType = food ? food->getType() : "unknown";
+        
+        std::cout << i + 1 << ". Food: " << foodName
+                  << " (" << foodType << ", ID: " << trimmedId << ")"
+                  << ", Servings: " << entries[i].servings << "\n";
+    }
+    
+    std::cout << "\nEnter the number of the entry you want to delete (0 to cancel): ";
+    int entryNumber;
+    std::cin >> entryNumber;
+    std::cin.ignore();
+    
+    if (entryNumber == 0) {
+        std::cout << "Deletion canceled.\n";
+        pause();
+        return;
+    }
+    
+    if (entryNumber < 1 || entryNumber > entries.size()) {
+        std::cout << "Invalid entry number.\n";
+        pause();
+        return;
+    }
+    
+    int index = entryNumber - 1;
+    LogEntry selectedEntry = entries[index];
+    
+    std::cout << "Are you sure you want to delete this entry? (y/n): ";
+    char confirmDelete;
+    std::cin >> confirmDelete;
+    std::cin.ignore();
+    
+    if (confirmDelete == 'y' || confirmDelete == 'Y') {
+        log.removeEntryByDateAndId(selectedEntry.date, selectedEntry.foodId);
+        std::cout << "Log entry deleted successfully.\n";
+        
+        // Save if auto-save is enabled
+        if (autoSaveEnabled) {
+            log.saveLog();
+            std::cout << "Log changes saved.\n";
+        }
+    } else {
+        std::cout << "Deletion canceled.\n";
+    }
+    
     pause();
 }
 
