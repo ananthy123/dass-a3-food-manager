@@ -231,6 +231,7 @@ void CLIManager::handleAddBasicFood() {
     std::cout << "Enter food name: ";
     std::getline(std::cin, name);
 
+    std::cout << "Enter comma-separated keywords: " << std::endl;
     auto keywords = getKeywordsInput();
 
     double calories, protein, carbs, fat, satFat, fiber;

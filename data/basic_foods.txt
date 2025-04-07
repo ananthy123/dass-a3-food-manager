@@ -12,5 +12,5 @@ b_11; Carrot;vegetable,carrot;25;0.6;6;0.1;0;1.7; A,K; potassium
 b_12; Oatmeal;grain,oats,breakfast;150;5;27;3;0.5;4; B1,B5; manganese
 b_13;Candy;Candi,Kandy,Condy;500;25;12;392;1923;382;A, B, C, Z;None
 b_14;New Orange;Orange New,orange;1;2;3;4;5;6;N, A;Some
-b_15;kushagra;kush,agra;1000;100;100;100;100;100;B1;K
-b_16;Honey;sweet,honey;500;12;30;30;30;20;A,E;Na,Mg
+b_15;Honey;sweet,honey;500;12;30;30;30;20;A,E;Na,Mg
+b_16;New Basic Food;sweet,not sweet;1;2;3;4;5;6;7,8;9,10
