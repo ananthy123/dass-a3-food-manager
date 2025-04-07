@@ -226,20 +226,43 @@ std::vector<std::shared_ptr<Food>> FoodDatabase::searchFoodsByKeywords(const std
         int matchCount = 0;
 
         for (const auto& keyword : keywords) {
-            if (std::find(foodKeywords.begin(), foodKeywords.end(), keyword) != foodKeywords.end()) {
-                ++matchCount;
+            // Convert search keyword to lowercase for case-insensitive comparison
+            std::string keywordLower = keyword;
+            std::transform(keywordLower.begin(), keywordLower.end(), keywordLower.begin(), 
+                          [](unsigned char c){ return std::tolower(c); });
+            
+            // Check if any food keyword contains this search keyword
+            bool foundMatch = false;
+            for (const auto& foodKeyword : foodKeywords) {
+                std::string foodKeywordLower = foodKeyword;
+                std::transform(foodKeywordLower.begin(), foodKeywordLower.end(), foodKeywordLower.begin(), 
+                              [](unsigned char c){ return std::tolower(c); });
+                
+                // Check for partial match (if one contains the other)
+                if (foodKeywordLower.find(keywordLower) != std::string::npos || 
+                    keywordLower.find(foodKeywordLower) != std::string::npos) {
+                    foundMatch = true;
+                    ++matchCount;
+                    break;  // Found a match for this keyword, move to next one
+                }
             }
         }
 
         return matchAll ? (matchCount == keywords.size()) : (matchCount > 0);
     };
 
+    // Search in basic foods
     for (const auto& food : basicFoods) {
-        if (matches(food)) results.push_back(food);
+        if (matches(food)) {
+            results.push_back(food);
+        }
     }
 
+    // Search in composite foods
     for (const auto& food : compositeFoods) {
-        if (matches(food)) results.push_back(food);
+        if (matches(food)) {
+            results.push_back(food);
+        }
     }
 
     return results;

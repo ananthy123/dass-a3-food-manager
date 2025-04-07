@@ -417,7 +417,8 @@ void CLIManager::handleAddComponentToCompositeFood() {
 
     std::cout << "Available Composite Foods:\n";
     for (size_t i = 0; i < compositeFoods.size(); ++i) {
-        std::cout << i + 1 << ". " << compositeFoods[i]->getName() << "\n";
+        std::cout << i + 1 << ". " << compositeFoods[i]->getName() 
+                  << " (ID: " << compositeFoods[i]->getId() << ")\n";
     }
 
     // Select composite food by number
@@ -434,40 +435,124 @@ void CLIManager::handleAddComponentToCompositeFood() {
     }
 
     auto compFood = std::dynamic_pointer_cast<CompositeFood>(compositeFoods[compositeIndex - 1]);
-
-    // Search for components by keyword
-    std::cout << "Enter keywords to search for components (comma-separated): ";
-    auto keywords = getKeywordsInput();
-    auto searchResults = db.searchFoodsByKeywords(keywords, true);
-
-    if (searchResults.empty()) {
-        std::cout << "No foods found matching the keywords.\n";
-        pause();
-        return;
-    }
-
-    // Display search results
-    std::cout << "Search Results:\n";
-    size_t index = 1;
-    for (const auto& food : searchResults) {
-        std::cout << index << ". " << food->getName() << " (" << food->getType() << ")\n";
-        index++;
-    }
-
-    // Select component by number
-    int componentIndex;
-    std::cout << "Select a component by number (or 0 to go back): ";
-    std::cin >> componentIndex;
+    
+    // Choose component selection method
+    std::cout << "\nHow would you like to select a component?\n";
+    std::cout << "1. Search by keywords\n";
+    std::cout << "2. View all foods\n";
+    std::cout << "3. Enter food ID directly\n";
+    std::cout << "Selection: ";
+    
+    int selectionMethod;
+    std::cin >> selectionMethod;
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
+    std::shared_ptr<Food> componentFood = nullptr;
+    
+    switch (selectionMethod) {
+        case 1: {
+            // Search for components by keyword
+            std::cout << "Enter keywords to search for components (comma-separated): ";
+            auto keywords = getKeywordsInput();
+            
+            std::cout << "Match (1) all keywords or (2) any keyword? ";
+            int matchType;
+            std::cin >> matchType;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            
+            bool matchAll = (matchType == 1);
+            auto searchResults = db.searchFoodsByKeywords(keywords, matchAll);
 
-    if (componentIndex == 0) return;
-    if (componentIndex < 1 || componentIndex > searchResults.size()) {
-        std::cout << "Invalid selection.\n";
+            if (searchResults.empty()) {
+                std::cout << "No foods found matching the keywords.\n";
+                pause();
+                return;
+            }
+
+            // Display search results
+            std::cout << "Search Results:\n";
+            for (size_t i = 0; i < searchResults.size(); ++i) {
+                std::cout << i + 1 << ". " << searchResults[i]->getName() 
+                          << " (" << searchResults[i]->getType() << ", ID: " 
+                          << searchResults[i]->getId() << ")\n";
+            }
+
+            // Select component by number
+            int componentIndex;
+            std::cout << "Select a component by number (or 0 to go back): ";
+            std::cin >> componentIndex;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+            if (componentIndex == 0) return;
+            if (componentIndex < 1 || componentIndex > searchResults.size()) {
+                std::cout << "Invalid selection.\n";
+                pause();
+                return;
+            }
+
+            componentFood = searchResults[componentIndex - 1];
+            break;
+        }
+        case 2: {
+            // View all foods (both basic and composite)
+            auto allFoods = db.getAllFoods();
+            
+            if (allFoods.empty()) {
+                std::cout << "No foods available in the database.\n";
+                pause();
+                return;
+            }
+            
+            std::cout << "All Available Foods:\n";
+            for (size_t i = 0; i < allFoods.size(); ++i) {
+                std::cout << i + 1 << ". " << allFoods[i]->getName() 
+                          << " (" << allFoods[i]->getType() << ", ID: " 
+                          << allFoods[i]->getId() << ")\n";
+            }
+            
+            // Select component by number
+            int componentIndex;
+            std::cout << "Select a component by number (or 0 to go back): ";
+            std::cin >> componentIndex;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+            if (componentIndex == 0) return;
+            if (componentIndex < 1 || componentIndex > allFoods.size()) {
+                std::cout << "Invalid selection.\n";
+                pause();
+                return;
+            }
+
+            componentFood = allFoods[componentIndex - 1];
+            break;
+        }
+        case 3: {
+            // Enter food ID directly
+            std::string foodId;
+            std::cout << "Enter food ID: ";
+            std::getline(std::cin, foodId);
+            
+            componentFood = db.findFoodById(foodId);
+            
+            if (!componentFood) {
+                std::cout << "Food with ID '" << foodId << "' not found.\n";
+                pause();
+                return;
+            }
+            break;
+        }
+        default:
+            std::cout << "Invalid selection method.\n";
+            pause();
+            return;
+    }
+
+    // Ensure we have a component food selected
+    if (!componentFood) {
+        std::cout << "No component food selected.\n";
         pause();
         return;
     }
-
-    auto componentFood = searchResults[componentIndex - 1];
 
     // Check for circular references
     if (componentFood->getId() == compFood->getId()) {
@@ -476,16 +561,14 @@ void CLIManager::handleAddComponentToCompositeFood() {
         return;
     }
 
-    if (componentFood->getType() == "composite") {
-        auto componentCompFood = std::dynamic_pointer_cast<CompositeFood>(componentFood);
-        for (const auto& pair : componentCompFood->getComponents()) {
-            if (pair.first->getId() == compFood->getId()) {
-                std::cout << "Cannot add this food as it would create a circular reference.\n";
-                pause();
-                return;
-            }
-        }
-    }
+    // if (componentFood->getType() == "composite") {
+    //     // Check if adding this component would create a circular reference
+    //     if (wouldCreateCircularReference(compFood, componentFood)) {
+    //         std::cout << "Cannot add this food as it would create a circular reference.\n";
+    //         pause();
+    //         return;
+    //     }
+    // }
 
     // Get quantity
     double quantity;
@@ -506,6 +589,32 @@ void CLIManager::handleAddComponentToCompositeFood() {
     std::cout << "Successfully added " << componentFood->getName() << " to " << compFood->getName() << ".\n";
     pause();
 }
+
+// // Helper method to check for circular references in composite foods
+// bool CLIManager::wouldCreateCircularReference(std::shared_ptr<CompositeFood> parent, std::shared_ptr<Food> child) {
+//     // If child is not composite, it can't create a circular reference
+//     if (child->getType() != "composite") {
+//         return false;
+//     }
+    
+//     auto childComp = std::dynamic_pointer_cast<CompositeFood>(child);
+    
+//     // If child contains parent as a component, it would create a circular reference
+//     for (const auto& pair : childComp->getComponents()) {
+//         if (pair.first->getId() == parent->getId()) {
+//             return true;
+//         }
+        
+//         // If any component is composite, recursively check
+//         if (pair.first->getType() == "composite") {
+//             if (wouldCreateCircularReference(parent, pair.first)) {
+//                 return true;
+//             }
+//         }
+//     }
+    
+//     return false;
+// }
 
 void CLIManager::pause() {
     std::cout << "Press ENTER to continue...";
@@ -596,7 +705,7 @@ void CLIManager::handleCalorieSummary() {
     std::cout << "Your target calorie intake is: " << targetCalories << " kcal\n";
 
     // Get the log entries for the specified date.
-    
+
 
 
     pause();

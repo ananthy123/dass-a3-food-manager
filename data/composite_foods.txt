@@ -5,5 +5,5 @@ c_4; Breakfast Bowl; breakfast,oatmeal,fruit;b_2:1,b_7:0.5
 c_5; Fruit Salad; salad,fruit;b_2:1
 c_6;computer;cpu;b_15:2,c_5:1
 c_7;Nig;nig,ga;
-c_8;Ananth's Dish;Ananth,dish;c_5:20
-c_9;Ananth's Food 2;;
+c_8;Ananth's Dish;Ananth,dish;c_5:20,b_1:11
+c_9;Ananth's Food 2;;c_5:23
