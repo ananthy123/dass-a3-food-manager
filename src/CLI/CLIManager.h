@@ -12,27 +12,37 @@ private:
     DietProfile profile;
     bool autoSaveEnabled;
 
-    // Menu + handlers
-    void showMenu();
-    void handleViewBasicFoods();       // Show all basic foods
-    void handleViewCompositeFoods();   // Show all composite foods
-    void handleAddBasicFood();         // Add a basic food (name + nutrition)
-    void handleAddCompositeFood();     // Add a composite food (name + components)
-    void handleAddLogEntry();          // Log a food entry
-    void handleViewLog();              // Display food log
-    void handleViewProfile();          // Show profile info
-    void handleAddComponentToCompositeFood(); 
+    // Main menu and sub-menus
+    void showMainMenu();
+    void showFoodMenu();
+    void showLogMenu();
+    void showProfileMenu();
+    
+    // Food menu handlers
+    void handleViewBasicFoods();
+    void handleViewCompositeFoods();
+    void handleAddBasicFood();
+    void handleAddCompositeFood();
+    void handleAddComponentToCompositeFood();
+    
+    // Log menu handlers
+    void handleAddLogEntry();
+    void handleViewLog();
+    
+    // Profile menu handlers
+    void handleViewProfile();
+    
+    // Database handlers
     void handleSaveDatabase();
     
     // Helpers
     std::vector<std::string> getKeywordsInput();
     void pause();
-    void promptSavePreference();       // Add this line for the new function
-    void saveIfAutoSave();  
+    void saveIfAutoSave();
 
 public:
     CLIManager();
-    void start();                      // Start main loop
+    void start();
 };
 
 #endif // CLI_MANAGER_H

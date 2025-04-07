@@ -76,47 +76,159 @@ CLIManager::CLIManager()
     // promptSavePreference();
 }
 
-void CLIManager::showMenu() {
+void CLIManager::showMainMenu() {
     std::cout << "\n=== YADA: Yet Another Diet Assistant ===\n";
+    std::cout << "1. Food Management\n";
+    std::cout << "2. Daily Log\n";
+    std::cout << "3. Diet Profile\n";
+    std::cout << "4. Save Database\n";
+    std::cout << "5. Exit\n";
+    std::cout << "Choose an option: ";
+}
+
+void CLIManager::showFoodMenu() {
+    std::cout << "\n=== Food Management ===\n";
     std::cout << "1. View Basic Foods\n";
     std::cout << "2. View Composite Foods\n";
     std::cout << "3. Add Basic Food\n";
     std::cout << "4. Add Composite Food\n";
-    std::cout << "5. Add Component to Composite Food\n"; // Add this line
-    std::cout << "6. Log Food Consumption\n";
-    std::cout << "7. View Daily Log\n";
-    std::cout << "8. View Diet Profile\n"; // Update the number
-    std::cout << "9. Save Database\n";
-    std::cout << "0. Exit\n";
+    std::cout << "5. Add Component to Composite Food\n";
+    std::cout << "6. Back to Main Menu\n";
     std::cout << "Choose an option: ";
 }
+
+void CLIManager::showLogMenu() {
+    std::cout << "\n=== Daily Log ===\n";
+    std::cout << "1. Log Food Consumption\n";
+    std::cout << "2. View Daily Log\n";
+    std::cout << "3. Back to Main Menu\n";
+    std::cout << "Choose an option: ";
+}
+
+void CLIManager::showProfileMenu() {
+    std::cout << "\n=== Diet Profile ===\n";
+    std::cout << "1. View Diet Profile\n";
+    std::cout << "2. Back to Main Menu\n";
+    std::cout << "Choose an option: ";
+}
+
+// void CLIManager::showMenu() {
+//     std::cout << "\n=== YADA: Yet Another Diet Assistant ===\n";
+//     std::cout << "1. View Basic Foods\n";
+//     std::cout << "2. View Composite Foods\n";
+//     std::cout << "3. Add Basic Food\n";
+//     std::cout << "4. Add Composite Food\n";
+//     std::cout << "5. Add Component to Composite Food\n"; // Add this line
+//     std::cout << "6. Log Food Consumption\n";
+//     std::cout << "7. View Daily Log\n";
+//     std::cout << "8. View Diet Profile\n"; // Update the number
+//     std::cout << "9. Save Database\n";
+//     std::cout << "0. Exit\n";
+//     std::cout << "Choose an option: ";
+// }
 
 void CLIManager::start() {
     int choice;
     do {
-        showMenu();
+        showMainMenu();
         std::cin >> choice;
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         switch (choice) {
-            case 1: handleViewBasicFoods(); break;
-            case 2: handleViewCompositeFoods(); break;
-            case 3: handleAddBasicFood(); break;
-            case 4: handleAddCompositeFood(); break;
-            case 5: handleAddComponentToCompositeFood(); break; // Add this line
-            case 6: handleAddLogEntry(); break;
-            case 7: handleViewLog(); break;
-            case 8: handleViewProfile(); break; // Update the number
-            case 9: handleSaveDatabase(); break;
-            case 0: break;
+            case 1: {
+                // Food Management Sub-Menu
+                int foodChoice;
+                do {
+                    showFoodMenu();
+                    std::cin >> foodChoice;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    
+                    switch (foodChoice) {
+                        case 1: handleViewBasicFoods(); break;
+                        case 2: handleViewCompositeFoods(); break;
+                        case 3: handleAddBasicFood(); break;
+                        case 4: handleAddCompositeFood(); break;
+                        case 5: handleAddComponentToCompositeFood(); break;
+                        case 6: break; // Back to main menu
+                        default: std::cout << "Invalid option.\n"; pause(); break;
+                    }
+                } while (foodChoice != 6);
+                break;
+            }
+            
+            case 2: {
+                // Daily Log Sub-Menu
+                int logChoice;
+                do {
+                    showLogMenu();
+                    std::cin >> logChoice;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    
+                    switch (logChoice) {
+                        case 1: handleAddLogEntry(); break;
+                        case 2: handleViewLog(); break;
+                        case 3: break; // Back to main menu
+                        default: std::cout << "Invalid option.\n"; pause(); break;
+                    }
+                } while (logChoice != 3);
+                break;
+            }
+            
+            case 3: {
+                // Diet Profile Sub-Menu
+                int profileChoice;
+                do {
+                    showProfileMenu();
+                    std::cin >> profileChoice;
+                    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                    
+                    switch (profileChoice) {
+                        case 1: handleViewProfile(); break;
+                        case 2: break; // Back to main menu
+                        default: std::cout << "Invalid option.\n"; pause(); break;
+                    }
+                } while (profileChoice != 2);
+                break;
+            }
+            
+            case 4: handleSaveDatabase(); break;
+            case 5: break; // Exit
             default: std::cout << "Invalid option.\n"; pause(); break;
         }
-    } while (choice != 0);
+    } while (choice != 5);
 
+    // Always save on exit
     db.saveDatabase();
     log.saveLog();
     std::cout << "Data saved. Goodbye!\n";
 }
+
+// void CLIManager::start() {
+//     int choice;
+//     do {
+//         showMenu();
+//         std::cin >> choice;
+//         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+//         switch (choice) {
+//             case 1: handleViewBasicFoods(); break;
+//             case 2: handleViewCompositeFoods(); break;
+//             case 3: handleAddBasicFood(); break;
+//             case 4: handleAddCompositeFood(); break;
+//             case 5: handleAddComponentToCompositeFood(); break; // Add this line
+//             case 6: handleAddLogEntry(); break;
+//             case 7: handleViewLog(); break;
+//             case 8: handleViewProfile(); break; // Update the number
+//             case 9: handleSaveDatabase(); break;
+//             case 0: break;
+//             default: std::cout << "Invalid option.\n"; pause(); break;
+//         }
+//     } while (choice != 0);
+
+//     db.saveDatabase();
+//     log.saveLog();
+//     std::cout << "Data saved. Goodbye!\n";
+// }
 
 void CLIManager::handleViewBasicFoods() {
     std::cout << "\n--- Basic Foods ---\n";
@@ -448,21 +560,21 @@ void CLIManager::pause() {
     std::cin.get();
 }
 
-void CLIManager::promptSavePreference() {
-    char choice;
-    std::cout << "\n=== Database Save Preference ===\n";
-    std::cout << "Would you like to save changes immediately after each modification? (y/n): ";
-    std::cin >> choice;
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+// void CLIManager::promptSavePreference() {
+//     char choice;
+//     std::cout << "\n=== Database Save Preference ===\n";
+//     std::cout << "Would you like to save changes immediately after each modification? (y/n): ";
+//     std::cin >> choice;
+//     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     
-    autoSaveEnabled = (choice == 'y' || choice == 'Y');
+//     autoSaveEnabled = (choice == 'y' || choice == 'Y');
     
-    if (autoSaveEnabled) {
-        std::cout << "Auto-save enabled. Changes will be saved immediately.\n";
-    } else {
-        std::cout << "Auto-save disabled. Changes will be saved when the program exits.\n";
-    }
-}
+//     if (autoSaveEnabled) {
+//         std::cout << "Auto-save enabled. Changes will be saved immediately.\n";
+//     } else {
+//         std::cout << "Auto-save disabled. Changes will be saved when the program exits.\n";
+//     }
+// }
 
 void CLIManager::saveIfAutoSave() {
     if (autoSaveEnabled) {
