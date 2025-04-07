@@ -1,5 +1,9 @@
 #include "DietProfile.h"
 #include <iostream>
+#include <limits> // Add this include for std::numeric_limits
+#include <fstream>
+#include <sstream>
+#include <stdexcept>
 
 // Initialize static member
 map<int, function<unique_ptr<CalorieCalculationStrategy>()>> DietProfile::strategyFactories;
@@ -91,4 +95,112 @@ std::map<int, std::string> DietProfile::getAvailableCalculationMethods() {
     }
     
     return methodNames;
+}
+
+void DietProfile::editProfile() {
+    std::cout << "\n--- Current Profile Values ---\n";
+    std::cout << "1. Name: " << name << "\n";
+    std::cout << "2. Gender: " << gender << "\n";
+    std::cout << "3. Height: " << height << " cm\n";
+    std::cout << "4. Age: " << age << " years\n";
+    std::cout << "5. Weight: " << weight << " kg\n";
+    std::cout << "6. Activity Level: " << activityLevel << "\n";
+
+    int fieldChoice;
+    std::cout << "\nEnter the number of the field you want to edit (1-6, 0 to cancel): ";
+    std::cin >> fieldChoice;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+    if (fieldChoice == 0) {
+        std::cout << "Edit cancelled.\n";
+        return;
+    }
+
+    switch (fieldChoice) {
+        case 1: {
+            std::string newName;
+            std::cout << "Enter new name: ";
+            std::getline(std::cin, newName);
+            name = newName;
+            break;
+        }
+        case 2: {
+            std::string newGender;
+            std::cout << "Enter new gender (male/female): ";
+            std::getline(std::cin, newGender);
+            gender = newGender;
+            break;
+        }
+        case 3: {
+            double newHeight;
+            std::cout << "Enter new height (cm): ";
+            std::cin >> newHeight;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            height = newHeight;
+            break;
+        }
+        case 4: {
+            int newAge;
+            std::cout << "Enter new age: ";
+            std::cin >> newAge;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            age = newAge;
+            break;
+        }
+        case 5: {
+            double newWeight;
+            std::cout << "Enter new weight (kg): ";
+            std::cin >> newWeight;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            weight = newWeight;
+            break;
+        }
+        case 6: {
+            double newActivityLevel;
+            std::cout << "Enter new activity level:\n";
+            std::cout << "1.2 = Sedentary (little to no exercise)\n";
+            std::cout << "1.375 = Light activity (light exercise 1-3 days/week)\n";
+            std::cout << "1.55 = Moderate activity (moderate exercise 3-5 days/week)\n";
+            std::cout << "1.725 = Very active (hard exercise 6-7 days/week)\n";
+            std::cout << "1.9 = Extra active (very hard exercise & physical job)\n";
+            std::cout << "Enter value: ";
+            std::cin >> newActivityLevel;
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            activityLevel = newActivityLevel;
+            break;
+        }
+        default:
+            std::cout << "Invalid choice.\n";
+            break;
+    }
+
+    std::cout << "Profile updated successfully!\n";
+}
+
+void DietProfile::loadProfileFromFile(const std::string& filePath) {
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        throw std::runtime_error("Error: Unable to open profile file: " + filePath);
+    }
+
+    std::string line;
+    if (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string fields[7];
+        for (int i = 0; i < 7; ++i) {
+            if (!std::getline(iss, fields[i], ';')) {
+                throw std::runtime_error("Error: Invalid profile file format.");
+            }
+        }
+
+        name = fields[0];
+        gender = fields[1];
+        height = std::stod(fields[2]);
+        age = std::stoi(fields[3]);
+        weight = std::stod(fields[4]);
+        activityLevel = std::stod(fields[5]);
+        setCalculationMethod(std::stoi(fields[6]));
+    } else {
+        throw std::runtime_error("Error: Profile file is empty.");
+    }
 }

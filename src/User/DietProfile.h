@@ -46,6 +46,11 @@ public:
     
     // Get all available calculation methods
     static std::map<int, std::string> getAvailableCalculationMethods();
+
+    void editProfile();  
+
+    // Load profile information from a file
+    void loadProfileFromFile(const std::string& filePath);
 };
 
 #endif // DIET_PROFILE_H

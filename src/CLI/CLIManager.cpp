@@ -60,20 +60,25 @@ bool validateBasicFoodsFile(const std::string& filename) {
 CLIManager::CLIManager()
     : db(BASIC_FOODS_FILE, COMPOSITE_FOODS_FILE),
       log(DAILY_LOG_FILE),
-      profile("Ananth", "male", 180, 25, 75, 1.55),
-      autoSaveEnabled(false) { // Initialize to false by default
+      profile("", "", 0, 0, 0, 0),
+      autoSaveEnabled(false) { // Initialize with dummy values
 
     // Validate file before loading
     if (!validateBasicFoodsFile(BASIC_FOODS_FILE)) {
         std::cerr << "🚫 Invalid format in basic_foods.txt. Fix it and rerun.\n";
-        exit(1); // 🔁 STOP program from continuing
+        exit(1);
     }
-    
-    db.loadDatabase(); // ✅ only called if validation passed
+
+    db.loadDatabase();
     log.loadLog();
-    
-    // Prompt for save preference
-    // promptSavePreference();
+
+    // Load profile information from file
+    try {
+        profile.loadProfileFromFile("../data/profile_info.txt");
+    } catch (const std::exception& e) {
+        std::cerr << e.what() << "\n";
+        exit(1);
+    }
 }
 
 void CLIManager::showMainMenu() {
@@ -108,25 +113,11 @@ void CLIManager::showLogMenu() {
 void CLIManager::showProfileMenu() {
     std::cout << "\n=== Diet Profile ===\n";
     std::cout << "1. View Diet Profile\n";
-    std::cout << "2. Change Calorie Calculation Method\n";
-    std::cout << "3. Back to Main Menu\n";
+    std::cout << "2. Edit Diet Profile\n";
+    std::cout << "3. Change Calorie Calculation Method\n";
+    std::cout << "4. Back to Main Menu\n";
     std::cout << "Choose an option: ";
 }
-
-// void CLIManager::showMenu() {
-//     std::cout << "\n=== YADA: Yet Another Diet Assistant ===\n";
-//     std::cout << "1. View Basic Foods\n";
-//     std::cout << "2. View Composite Foods\n";
-//     std::cout << "3. Add Basic Food\n";
-//     std::cout << "4. Add Composite Food\n";
-//     std::cout << "5. Add Component to Composite Food\n"; // Add this line
-//     std::cout << "6. Log Food Consumption\n";
-//     std::cout << "7. View Daily Log\n";
-//     std::cout << "8. View Diet Profile\n"; // Update the number
-//     std::cout << "9. Save Database\n";
-//     std::cout << "0. Exit\n";
-//     std::cout << "Choose an option: ";
-// }
 
 void CLIManager::start() {
     int choice;
@@ -185,8 +176,9 @@ void CLIManager::start() {
                     
                     switch (profileChoice) {
                         case 1: handleViewProfile(); break;
-                        case 2: handleCalorieMethodChange(); break;
-                        case 3: break; // Back to main menu
+                        case 2: handleEditProfile(); break;
+                        case 3: handleCalorieMethodChange(); break;
+                        case 4: break; // Back to main menu
                         default: std::cout << "Invalid option.\n"; pause(); break;
                     }
                 } while (profileChoice != 3);
@@ -204,33 +196,6 @@ void CLIManager::start() {
     log.saveLog();
     std::cout << "Data saved. Goodbye!\n";
 }
-
-// void CLIManager::start() {
-//     int choice;
-//     do {
-//         showMenu();
-//         std::cin >> choice;
-//         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-//         switch (choice) {
-//             case 1: handleViewBasicFoods(); break;
-//             case 2: handleViewCompositeFoods(); break;
-//             case 3: handleAddBasicFood(); break;
-//             case 4: handleAddCompositeFood(); break;
-//             case 5: handleAddComponentToCompositeFood(); break; // Add this line
-//             case 6: handleAddLogEntry(); break;
-//             case 7: handleViewLog(); break;
-//             case 8: handleViewProfile(); break; // Update the number
-//             case 9: handleSaveDatabase(); break;
-//             case 0: break;
-//             default: std::cout << "Invalid option.\n"; pause(); break;
-//         }
-//     } while (choice != 0);
-
-//     db.saveDatabase();
-//     log.saveLog();
-//     std::cout << "Data saved. Goodbye!\n";
-// }
 
 void CLIManager::handleViewBasicFoods() {
     std::cout << "\n--- Basic Foods ---\n";
@@ -619,4 +584,8 @@ void CLIManager::handleCalorieMethodChange() {
         std::cout << "Invalid method ID. No changes made.\n";
     }
     pause();
+}
+
+void CLIManager::handleEditProfile() {
+    profile.editProfile();
 }
